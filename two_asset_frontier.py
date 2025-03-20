@@ -46,6 +46,9 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     ax.tick_params(axis='both', labelsize=7)  # smaller tick label font
     ax.legend(fontsize=7)
 
+    # Tight layout to remove extra margins
+    plt.tight_layout()
+
     st.pyplot(fig)
 
 def main():
