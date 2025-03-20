@@ -37,18 +37,19 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, label='Random Portfolios')
     ax.plot(port_stdevs, port_returns, 'r-', label='Efficient Frontier', linewidth=2)
     
-    ax.scatter(sigma_A, mu_A, s=70, marker='o', label='Asset A')  # Slightly smaller markers
-    ax.scatter(sigma_B, mu_B, s=70, marker='o', label='Asset B')
+    ax.scatter(sigma_A, mu_A, s=40, marker='o', label='Asset A')  # Slightly smaller markers
+    ax.scatter(sigma_B, mu_B, s=40, marker='o', label='Asset B')
 
-    ax.set_title('2-Stock Efficient Frontier')
-    ax.set_xlabel('Portfolio Standard Deviation')
-    ax.set_ylabel('Portfolio Expected Return')
-    ax.legend()
+    ax.set_title('2-Stock Efficient Frontier', fontsize=10)
+    ax.set_xlabel('Portfolio Standard Deviation', fontsize=8)
+    ax.set_ylabel('Portfolio Expected Return', fontsize=8)
+    ax.tick_params(axis='both', labelsize=7)  # smaller tick label font
+    ax.legend(fontsize=7)
 
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Efficient Frontier Simulator (Compact)")
+    st.title("Two-Stock Efficient Frontier Simulator")
 
     # Give the sliders column more room, making the chart column relatively smaller.
     col_sliders, col_chart = st.columns([2, 3])  # << Adjust ratio: [2,3], [1,2], etc.
