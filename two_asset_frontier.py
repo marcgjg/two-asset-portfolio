@@ -59,7 +59,7 @@ def main():
         mu_A = st.slider("Expected Return of Asset A", 0.00, 0.20, 0.10, 0.01)
         mu_B = st.slider("Expected Return of Asset B", 0.00, 0.20, 0.15, 0.01)
         sigma_A = st.slider("Standard Deviation of Asset A", 0.01, 0.40, 0.20, 0.01)
-        sigma_B = st.slider("Standard Deviation of Asset B)", 0.01, 0.40, 0.30, 0.01)
+        sigma_B = st.slider("Standard Deviation of Asset B", 0.01, 0.40, 0.30, 0.01)
         corr_AB = st.slider("Correlation Between Returns of Assets A and B", -1.0, 1.0, 0.20, 0.05)
 
     with col2:
