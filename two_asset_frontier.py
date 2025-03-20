@@ -108,7 +108,7 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
 
 def main():
-    st.title("Two-Stock Frontier with Dashed Inefficient Part and MVP")
+    st.title("Two-Stock Frontier")
 
     col_sliders, col_chart = st.columns([3, 2])
 
