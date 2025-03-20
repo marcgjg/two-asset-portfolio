@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 1) Use a wide page layout to maximize horizontal space
+# Make the page layout wide so columns can sit side-by-side
 st.set_page_config(layout='wide')
 
 def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
@@ -20,7 +20,7 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         port_returns.append(p_return)
         port_stdevs.append(np.sqrt(p_var))
 
-    # Random simulation (optional, just for visual illustration)
+    # Random simulation (for illustration)
     n_portfolios = 3000
     rand_w = np.random.rand(n_portfolios)
     rand_returns = []
@@ -32,14 +32,13 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         rand_returns.append(p_return)
         rand_stdevs.append(np.sqrt(p_var))
 
-    # Plot
-    fig, ax = plt.subplots(figsize=(6, 4))  # Reduced figure size
+    # Plot with a smaller figure size
+    fig, ax = plt.subplots(figsize=(4, 3))  # << Reduce the diagram size here
     ax.scatter(rand_stdevs, rand_returns, alpha=0.2, label='Random Portfolios')
     ax.plot(port_stdevs, port_returns, 'r-', label='Efficient Frontier', linewidth=2)
     
-    # Mark individual assets
-    ax.scatter(sigma_A, mu_A, s=100, marker='o', label='Asset A')
-    ax.scatter(sigma_B, mu_B, s=100, marker='o', label='Asset B')
+    ax.scatter(sigma_A, mu_A, s=70, marker='o', label='Asset A')  # Slightly smaller markers
+    ax.scatter(sigma_B, mu_B, s=70, marker='o', label='Asset B')
 
     ax.set_title('2-Stock Efficient Frontier')
     ax.set_xlabel('Portfolio Standard Deviation')
@@ -49,21 +48,20 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Efficient Frontier Simulator")
+    st.title("Two-Stock Efficient Frontier Simulator (Compact)")
 
-    # 2) Create two columns: left for sliders, right for chart
-    col1, col2 = st.columns([1,2])  # 1:2 width ratio
+    # Give the sliders column more room, making the chart column relatively smaller.
+    col_sliders, col_chart = st.columns([2, 3])  # << Adjust ratio: [2,3], [1,2], etc.
 
-    with col1:
-        st.markdown("### Adjust Parameters")
-        mu_A = st.slider("Expected Return of Asset A", 0.00, 0.20, 0.10, 0.01)
-        mu_B = st.slider("Expected Return of Asset B", 0.00, 0.20, 0.15, 0.01)
-        sigma_A = st.slider("Standard Deviation of Asset A", 0.01, 0.40, 0.20, 0.01)
-        sigma_B = st.slider("Standard Deviation of Asset B", 0.01, 0.40, 0.30, 0.01)
-        corr_AB = st.slider("Correlation Between Returns of Assets A and B", -1.0, 1.0, 0.20, 0.05)
+    with col_sliders:
+        st.markdown("#### Adjust the Parameters Below")
+        mu_A = st.slider("mu_A (Expected Return of Asset A)", 0.00, 0.20, 0.10, 0.01)
+        mu_B = st.slider("mu_B (Expected Return of Asset B)", 0.00, 0.20, 0.15, 0.01)
+        sigma_A = st.slider("sigma_A (Std Dev of Asset A)", 0.01, 0.40, 0.20, 0.01)
+        sigma_B = st.slider("sigma_B (Std Dev of Asset B)", 0.01, 0.40, 0.30, 0.01)
+        corr_AB = st.slider("corr_AB (Correlation)", -1.0, 1.0, 0.20, 0.05)
 
-    with col2:
-        # Plot frontier in the second (right) column
+    with col_chart:
         plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
 
 if __name__ == "__main__":
