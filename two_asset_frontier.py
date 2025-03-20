@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Make the page layout wide so columns can sit side-by-side
 st.set_page_config(layout='wide')
 
-def plot_two_asset_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
+def plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # Compute covariance
     cov_AB = corr_AB * sigma_A * sigma_B
 
@@ -35,7 +35,7 @@ def plot_two_asset_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # Plot with a smaller figure size
     fig, ax = plt.subplots(figsize=(3, 2))
     # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, label='Random Portfolios')
-    ax.plot(port_stdevs, port_returns, 'r-', label='Efficient Frontier', linewidth=1)
+    ax.plot(port_stdevs, port_returns, 'r-', label='Combinations of A and B', linewidth=1)
 
     # Decrease marker sizes for clarity
     ax.scatter(sigma_A, mu_A, s=40, marker='o', label='Asset A')
@@ -72,7 +72,7 @@ def main():
         corr_AB = st.slider("Correlation Between Assets A and B", -1.0, 1.0, 0.20, 0.05)
 
     with col_chart:
-        plot_two_asset_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
+        plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
 
 if __name__ == "__main__":
     main()
