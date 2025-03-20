@@ -34,7 +34,7 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
     # Plot with a smaller figure size
     fig, ax = plt.subplots(figsize=(3, 2))
-    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, label='Random Portfolios')
+    # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, label='Random Portfolios')
     ax.plot(port_stdevs, port_returns, 'r-', label='Efficient Frontier', linewidth=1)
 
     # Decrease marker sizes for clarity
@@ -52,10 +52,10 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Efficient Frontier (Compact)")
+    st.title("Two-Stock Efficient Frontier")
 
     # Two columns: sliders on the left, chart on the right
-    col_sliders, col_chart = st.columns([3, 2])  # Adjust ratio as needed
+    col_sliders, col_chart = st.columns([2, 3])  # Adjust ratio as needed
 
     with col_sliders:
         st.markdown("### Adjust the Parameters")
