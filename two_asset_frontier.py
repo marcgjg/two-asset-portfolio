@@ -43,7 +43,7 @@ def plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
     # Shorter labels and smaller font sizes
     ax.set_title('Two-Stock Portfolio', fontsize=10)
-    ax.set_xlabel('Std Dev', fontsize=8)
+    ax.set_xlabel('Std. Dev.', fontsize=8)
     ax.set_ylabel('Exp. Return', fontsize=8)
     ax.tick_params(axis='both', labelsize=7)
     ax.legend(fontsize=7)
