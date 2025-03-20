@@ -91,4 +91,39 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
     # Mark each stock individually (endpoints)
     # Remember: w=0 => Stock B, w=1 => Stock A
-    ax.scatter(std_B, ret_B, s=50, marker='o', label='St
+    ax.scatter(std_B, ret_B, s=50, marker='o', label='Stock B')
+    ax.scatter(std_A, ret_A, s=50, marker='o', label='Stock A')
+
+    # Mark the MVP with a black star
+    ax.scatter(mvp_x, mvp_y, s=80, marker='*', color='black', label='Minimum-Variance Portfolio')
+
+    ax.set_title("Two-Stock Frontier")
+    ax.set_xlabel("Standard Deviation (Risk)")
+    ax.set_ylabel("Expected Return")
+    ax.legend(loc='best')
+    plt.tight_layout()
+
+    # Render the figure in Streamlit
+    st.pyplot(fig)
+
+
+def main():
+    st.title("Two-Stock Frontier with Dashed Inefficient Part and MVP")
+
+    col_sliders, col_chart = st.columns([3, 2])
+
+    with col_sliders:
+        st.markdown("### Adjust the Parameters")
+
+        mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.10, 0.01)
+        mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.15, 0.01)
+        sigma_A = st.slider("Standard Deviation of Stock A", 0.01, 0.40, 0.20, 0.01)
+        sigma_B = st.slider("Standard Deviation of Stock B", 0.01, 0.40, 0.30, 0.01)
+        corr_AB = st.slider("Correlation Between Stocks A and B", -1.0, 1.0, 0.20, 0.05)
+
+    with col_chart:
+        plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
+
+
+if __name__ == "__main__":
+    main()
