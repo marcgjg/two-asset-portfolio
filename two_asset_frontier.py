@@ -72,7 +72,7 @@ def main():
         corr_AB = st.slider("Correlation Between Assets A and B", -1.0, 1.0, 0.20, 0.05)
 
     with col_chart:
-        plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
+        plot_two_asset_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
 
 if __name__ == "__main__":
     main()
