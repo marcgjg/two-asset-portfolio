@@ -39,7 +39,25 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     mvp_x = port_stdevs[idx_min]
     mvp_y = port_returns[idx_min]
 
-    # ---------- 3) Determine which stock has the HIGHER return ----------
+    # ---------- 3) Handle the special case: mu_A == mu_B ----------
+    tol = 1e-12  # tolerance for floating-point equality
+    same_return = abs(mu_A - mu_B) < tol
+
+    if same_return:
+        #
+        # The entire frontier is a horizontal line, so the only "efficient" point is the MVP.
+        #
+        # x_ef, y_ef => the single MVP point
+        x_ef = [mvp_x]
+        y_ef = [mvp_y]
+
+        # x_inef, y_inef => everything else
+        x_inef = np.delete(port_stdevs, idx_min)
+        y_inef = np.delete(port_returns, idx_min)
+
+    else:
+    
+    # ---------- 4) Determine which stock has the HIGHER return ----------
     # so we know which end of the curve is "efficient" (above the MVP).
     #   - If Stock A has higher return: w=1 => that’s the top end.
     #   - If Stock B has higher return: w=0 => that’s the top end.
@@ -65,7 +83,7 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         x_inef   = port_stdevs[idx_min:]
         y_inef   = port_returns[idx_min:]
 
-    # ---------- 4) Generate random portfolios for illustration ----------
+    # ---------- 5) Generate random portfolios for illustration ----------
     n_portfolios = 3000
     rand_weights = np.random.rand(n_portfolios)
     rand_returns = []
@@ -77,7 +95,7 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         rand_returns.append(p_return)
         rand_stdevs.append(np.sqrt(p_var))
 
-    # ---------- 5) Plot ----------
+    # ---------- 6) Plot ----------
     fig, ax = plt.subplots(figsize=(5, 3))
 
     # Random portfolios (gray dots)
