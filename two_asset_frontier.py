@@ -33,37 +33,39 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         rand_stdevs.append(np.sqrt(p_var))
 
     # Plot with a smaller figure size
-    fig, ax = plt.subplots(figsize=(3, 2))  # << Reduce the diagram size here
-    # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, label='Random Portfolios')
-    ax.plot(port_stdevs, port_returns, 'r-', label='Efficient Frontier', linewidth=2)
-    
-    ax.scatter(sigma_A, mu_A, s=40, marker='o', label='Asset A')  # Slightly smaller markers
+    fig, ax = plt.subplots(figsize=(3, 2))
+    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, label='Random Portfolios')
+    ax.plot(port_stdevs, port_returns, 'r-', label='Efficient Frontier', linewidth=1)
+
+    # Decrease marker sizes for clarity
+    ax.scatter(sigma_A, mu_A, s=40, marker='o', label='Asset A')
     ax.scatter(sigma_B, mu_B, s=40, marker='o', label='Asset B')
 
-    ax.set_title('2-Stock Efficient Frontier', fontsize=10)
-    ax.set_xlabel('Portfolio Standard Deviation', fontsize=8)
-    ax.set_ylabel('Portfolio Expected Return', fontsize=8)
-    ax.tick_params(axis='both', labelsize=7)  # smaller tick label font
+    # Shorter labels and smaller font sizes
+    ax.set_title('2-Stock Frontier', fontsize=10)
+    ax.set_xlabel('Std Dev', fontsize=8)
+    ax.set_ylabel('Return', fontsize=8)
+    ax.tick_params(axis='both', labelsize=7)
     ax.legend(fontsize=7)
 
-    # Tight layout to remove extra margins
     plt.tight_layout()
-
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Efficient Frontier Simulator")
+    st.title("Two-Stock Efficient Frontier (Compact)")
 
-    # Give the sliders column more room, making the chart column relatively smaller.
-    col_sliders, col_chart = st.columns([2, 3])  # << Adjust ratio: [2,3], [1,2], etc.
+    # Two columns: sliders on the left, chart on the right
+    col_sliders, col_chart = st.columns([3, 2])  # Adjust ratio as needed
 
     with col_sliders:
-        st.markdown("#### Adjust the Parameters Below")
-        mu_A = st.slider("mu_A (Expected Return of Asset A)", 0.00, 0.20, 0.10, 0.01)
-        mu_B = st.slider("mu_B (Expected Return of Asset B)", 0.00, 0.20, 0.15, 0.01)
-        sigma_A = st.slider("sigma_A (Std Dev of Asset A)", 0.01, 0.40, 0.20, 0.01)
-        sigma_B = st.slider("sigma_B (Std Dev of Asset B)", 0.01, 0.40, 0.30, 0.01)
-        corr_AB = st.slider("corr_AB (Correlation)", -1.0, 1.0, 0.20, 0.05)
+        st.markdown("### Adjust the Parameters")
+
+        # SIMPLIFIED LABELS
+        mu_A = st.slider("Expected Return of Asset A", 0.00, 0.20, 0.10, 0.01)
+        mu_B = st.slider("Expected Return of Asset B", 0.00, 0.20, 0.15, 0.01)
+        sigma_A = st.slider("Standard Deviation of Asset A", 0.01, 0.40, 0.20, 0.01)
+        sigma_B = st.slider("Standard Deviation of Asset B", 0.01, 0.40, 0.30, 0.01)
+        corr_AB = st.slider("Correlation Between Assets A and B", -1.0, 1.0, 0.20, 0.05)
 
     with col_chart:
         plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
