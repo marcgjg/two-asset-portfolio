@@ -56,7 +56,7 @@ def plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Efficient Frontier")
+    st.title("Two-Stock Portfolio")
 
     # Two columns: sliders on the left, chart on the right
     col_sliders, col_chart = st.columns([2, 3])  # Adjust ratio as needed
