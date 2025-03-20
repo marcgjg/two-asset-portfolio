@@ -2,15 +2,19 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Make the page layout wide so columns can sit side-by-side
 st.set_page_config(layout='wide')
 
-def plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
-    # Compute covariance
+def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
+    """Plot 2-asset frontier with bottom portion as a dashed line 
+       and top portion as a solid line (the efficient part)."""
+
+    # ----- 1) Compute the required data -----
+
+    # Covariance
     cov_AB = corr_AB * sigma_A * sigma_B
 
-    # Generate parametric frontier
-    weights = np.linspace(0, 1, 100)
+    # Parametric approach: w in [0, 1]
+    weights = np.linspace(0, 1, 200)  # more points for a smoother curve
     port_returns = []
     port_stdevs  = []
 
@@ -20,7 +24,22 @@ def plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         port_returns.append(p_return)
         port_stdevs.append(np.sqrt(p_var))
 
-    # Random simulation (for illustration)
+    port_returns = np.array(port_returns)
+    port_stdevs  = np.array(port_stdevs)
+
+    # Find the index of the minimum variance portfolio
+    idx_min = np.argmin(port_stdevs)
+
+    # Split the curve into two segments:
+    #   - from w=0 to w at min variance => "inefficient" portion (dashed)
+    #   - from w at min variance to w=1 => "efficient" portion (solid)
+    x_inef = port_stdevs[:idx_min+1]
+    y_inef = port_returns[:idx_min+1]
+
+    x_ef   = port_stdevs[idx_min:]
+    y_ef   = port_returns[idx_min:]
+
+    # ----- 2) Random portfolios for illustration -----
     n_portfolios = 3000
     rand_w = np.random.rand(n_portfolios)
     rand_returns = []
@@ -32,47 +51,43 @@ def plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         rand_returns.append(p_return)
         rand_stdevs.append(np.sqrt(p_var))
 
-    # Plot with a smaller figure size
-    fig, ax = plt.subplots(figsize=(3, 2))
-    # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, label='Random Portfolios')
-    ax.plot(port_stdevs, port_returns, 'r-', label='Combinations of A and B', linewidth=1)
+    # ----- 3) Plot -----
+    fig, ax = plt.subplots(figsize=(5, 3))
+    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, label='Random Portfolios')
 
-    # Decrease marker sizes for clarity
-    ax.scatter(sigma_A, mu_A, s=40, marker='o', label='Stock A')
-    ax.scatter(sigma_B, mu_B, s=40, marker='o', label='Stock B')
+    # Plot the "inefficient" (lower) part as dashed
+    ax.plot(x_inef, y_inef, 'r--', label='Inefficient')
 
-    # Shorter labels and smaller font sizes
-    ax.set_title('Two-Stock Portfolio', fontsize=10)
-    ax.set_xlabel('Std. Dev.', fontsize=8)
-    ax.set_ylabel('Exp. Return', fontsize=8)
-    ax.tick_params(axis='both', labelsize=7)
-    ax.legend(fontsize=7)
+    # Plot the "efficient" (upper) part as solid
+    ax.plot(x_ef, y_ef, 'r-', label='Efficient Frontier', linewidth=2)
 
-    # Force both axes to start at zero
-    # ax.set_xlim(left=0)   # x-axis starts at 0
-    # ax.set_ylim(bottom=0) # y-axis starts at 0
-    
+    # Mark the individual assets
+    ax.scatter(sigma_A, mu_A, s=40, marker='o', label='Asset A')
+    ax.scatter(sigma_B, mu_B, s=40, marker='o', label='Asset B')
+
+    ax.set_title('Two-Asset Frontier')
+    ax.set_xlabel('Std Dev')
+    ax.set_ylabel('Return')
+    ax.legend()
     plt.tight_layout()
+
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Portfolio")
+    st.title("Two-Stock Frontier with Dashed Inefficient Part")
 
-    # Two columns: sliders on the left, chart on the right
-    col_sliders, col_chart = st.columns([2, 3])  # Adjust ratio as needed
+    col_sliders, col_chart = st.columns([3, 2])
 
     with col_sliders:
         st.markdown("### Adjust the Parameters")
-
-        # SIMPLIFIED LABELS
-        mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.10, 0.01)
-        mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.15, 0.01)
-        sigma_A = st.slider("Standard Deviation of Stock A", 0.01, 0.40, 0.20, 0.01)
-        sigma_B = st.slider("Standard Deviation of Stock B", 0.01, 0.40, 0.30, 0.01)
-        corr_AB = st.slider("Correlation Between Stocks A and B", -1.0, 1.0, 0.20, 0.05)
+        mu_A = st.slider("Expected Return of Asset A", 0.00, 0.20, 0.10, 0.01)
+        mu_B = st.slider("Expected Return of Asset B", 0.00, 0.20, 0.15, 0.01)
+        sigma_A = st.slider("Standard Deviation of Asset A", 0.01, 0.40, 0.20, 0.01)
+        sigma_B = st.slider("Standard Deviation of Asset B", 0.01, 0.40, 0.30, 0.01)
+        corr_AB = st.slider("Correlation Between Assets A and B", -1.0, 1.0, 0.20, 0.05)
 
     with col_chart:
-        plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
+        plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
 
 if __name__ == "__main__":
     main()
