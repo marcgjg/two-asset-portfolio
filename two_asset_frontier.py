@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Make the page layout wide so columns can sit side-by-side
 st.set_page_config(layout='wide')
 
-def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
+def plot_two_asset_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # Compute covariance
     cov_AB = corr_AB * sigma_A * sigma_B
 
