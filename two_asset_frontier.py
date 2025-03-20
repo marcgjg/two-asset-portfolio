@@ -6,13 +6,15 @@ st.set_page_config(layout='wide')
 
 def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     """
-    Plots a two-stock mean–variance frontier with:
-      - Random portfolios (gray dots)
-      - A split frontier (solid red for efficient, dashed red for inefficient)
-      - Special case: if mu_A == mu_B exactly, only the MVP is efficient
+    Plots a two-stock frontier with:
+      - Random portfolios (gray dots).
+      - 'Efficient Frontier' (solid red).
+      - 'Inefficient Portfolios' (dashed red).
+      - Special case: if Stock A and Stock B have the same return (within a tolerance),
+        only the MVP is labeled 'efficient' (a single point).
     """
 
-    # 1) Basic parametric frontier
+    # 1) Parametric frontier
     cov_AB = corr_AB * sigma_A * sigma_B
     n_points = 200
     weights = np.linspace(0, 1, n_points)
@@ -46,38 +48,45 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         rand_stdevs.append(np.sqrt(rp_var))
 
     # 4) Decide how to split efficient vs. inefficient
-    # SPECIAL CASE: mu_A == mu_B => single efficient point (the MVP)
-    if mu_A == mu_B:
-        # All parametric points have the same return => only MVP is truly "efficient"
+    # We'll treat the two returns as 'equal' if their absolute difference < some tolerance
+    tol = 1e-10
+    if abs(mu_A - mu_B) < tol:
+        #
+        # Same return: entire parametric line is horizontal => ONLY the MVP is truly efficient
+        #
         x_ef = [mvp_x]
         y_ef = [mvp_y]
 
-        # Everything else is "inefficient"
-        mask_other = np.ones_like(port_stdevs, dtype=bool)
-        mask_other[idx_min] = False
-        x_inef = port_stdevs[mask_other]
-        y_inef = port_returns[mask_other]
+        # The rest are all inefficient
+        mask_others = np.ones_like(port_stdevs, dtype=bool)
+        mask_others[idx_min] = False  # exclude the MVP
+        x_inef = port_stdevs[mask_others]
+        y_inef = port_returns[mask_others]
 
     else:
-        # Normal logic: whichever stock has higher return => that "side" from the MVP is efficient
-        ret_B, std_B = port_returns[0],  port_stdevs[0]   # w=0 => 100% in Stock B
-        ret_A, std_A = port_returns[-1], port_stdevs[-1]  # w=1 => 100% in Stock A
+        #
+        # Different returns => normal logic
+        #
+        # Stock B => w=0
+        ret_B, std_B = port_returns[0],  port_stdevs[0]
+        # Stock A => w=1
+        ret_A, std_A = port_returns[-1], port_stdevs[-1]
 
         if ret_A > ret_B:
-            # A has higher return -> from MVP to w=1 is efficient
+            # A has higher return => from MVP to w=1 is efficient
             x_inef = port_stdevs[:idx_min+1]
             y_inef = port_returns[:idx_min+1]
             x_ef   = port_stdevs[idx_min:]
             y_ef   = port_returns[idx_min:]
         else:
-            # B has higher return -> from w=0 to MVP is efficient
+            # B has higher return => from w=0 to MVP is efficient
             x_ef   = port_stdevs[:idx_min+1]
             y_ef   = port_returns[:idx_min+1]
             x_inef = port_stdevs[idx_min:]
             y_inef = port_returns[idx_min:]
 
-    # 5) Identify Stock A & Stock B
-    # In this param approach: w=0 => B, w=1 => A
+    # 5) Stock A, Stock B from param arrays
+    # w=0 => B, w=1 => A
     std_B = port_stdevs[0]
     ret_B = port_returns[0]
     std_A = port_stdevs[-1]
@@ -89,23 +98,22 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # Random portfolios
     ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray')
 
-    # Efficient frontier: solid red
+    # 'Efficient Frontier' => solid red
     ax.plot(x_ef, y_ef, 'r-', linewidth=2, label='Efficient Frontier')
 
-    # Inefficient: dashed red
+    # 'Inefficient Portfolios' => dashed red
     ax.plot(x_inef, y_inef, 'r--', label='Inefficient Portfolios')
 
-    # Stock A, Stock B
-    ax.scatter(std_A, ret_A, s=50, marker='o', label='Stock A')
-    ax.scatter(std_B, ret_B, s=50, marker='o', label='Stock B')
+    # Mark Stock A, Stock B
+    ax.scatter(std_A, ret_A, marker='o', s=50, label='Stock A')
+    ax.scatter(std_B, ret_B, marker='o', s=50, label='Stock B')
 
-    # MVP
+    # MVP => star
     ax.scatter(mvp_x, mvp_y, marker='*', s=80, color='black', label='Minimum-Variance Portfolio')
 
-    # Force legend order
+    # Force desired legend order
     handles, labels = ax.get_legend_handles_labels()
     label_to_handle = dict(zip(labels, handles))
-
     desired_labels = [
         'Efficient Frontier',
         'Inefficient Portfolios',
@@ -120,6 +128,7 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     ax.set_ylabel('Expected Return')
     ax.set_title('Two-Stock Frontier')
     plt.tight_layout()
+
     st.pyplot(fig)
 
 def main():
@@ -129,6 +138,7 @@ def main():
 
     with col_sliders:
         st.markdown("### Adjust the Parameters")
+
         mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.10, 0.01)
         mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.10, 0.01)
         sigma_A = st.slider("Standard Deviation of Stock A", 0.01, 0.40, 0.20, 0.01)
