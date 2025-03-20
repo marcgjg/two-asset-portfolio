@@ -38,8 +38,8 @@ def plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     ax.plot(port_stdevs, port_returns, 'r-', label='Combinations of A and B', linewidth=1)
 
     # Decrease marker sizes for clarity
-    ax.scatter(sigma_A, mu_A, s=40, marker='o', label='Asset A')
-    ax.scatter(sigma_B, mu_B, s=40, marker='o', label='Asset B')
+    ax.scatter(sigma_A, mu_A, s=40, marker='o', label='Stock A')
+    ax.scatter(sigma_B, mu_B, s=40, marker='o', label='Stock B')
 
     # Shorter labels and smaller font sizes
     ax.set_title('2-Stock Portfolio', fontsize=10)
@@ -65,11 +65,11 @@ def main():
         st.markdown("### Adjust the Parameters")
 
         # SIMPLIFIED LABELS
-        mu_A = st.slider("Expected Return of Asset A", 0.00, 0.20, 0.10, 0.01)
-        mu_B = st.slider("Expected Return of Asset B", 0.00, 0.20, 0.15, 0.01)
-        sigma_A = st.slider("Standard Deviation of Asset A", 0.01, 0.40, 0.20, 0.01)
-        sigma_B = st.slider("Standard Deviation of Asset B", 0.01, 0.40, 0.30, 0.01)
-        corr_AB = st.slider("Correlation Between Assets A and B", -1.0, 1.0, 0.20, 0.05)
+        mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.10, 0.01)
+        mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.15, 0.01)
+        sigma_A = st.slider("Standard Deviation of Stock A", 0.01, 0.40, 0.20, 0.01)
+        sigma_B = st.slider("Standard Deviation of Stock B", 0.01, 0.40, 0.30, 0.01)
+        corr_AB = st.slider("Correlation Between Stocks A and B", -1.0, 1.0, 0.20, 0.05)
 
     with col_chart:
         plot_two_stock_portfolio(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
