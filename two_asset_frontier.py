@@ -91,8 +91,8 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
     # Mark each stock individually (endpoints)
     # Remember: w=0 => Stock B, w=1 => Stock A
-    ax.scatter(std_B, ret_B, s=50, marker='o', label='Stock B')
     ax.scatter(std_A, ret_A, s=50, marker='o', label='Stock A')
+    ax.scatter(std_B, ret_B, s=50, marker='o', label='Stock B')
 
     # Mark the MVP with a black star
     ax.scatter(mvp_x, mvp_y, s=80, marker='*', color='black', label='Minimum-Variance Portfolio')
