@@ -31,7 +31,7 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
     # Plot
     fig, ax = plt.subplots(figsize=(7, 5))
-    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, label='Random Portfolios')
+    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, label='Individual Portfolios')
     ax.plot(port_stdevs, port_returns, 'r-', label='Efficient Frontier', linewidth=2)
     ax.scatter(sigma_A, mu_A, s=100, marker='o', label='Asset A')
     ax.scatter(sigma_B, mu_B, s=100, marker='o', label='Asset B')
@@ -49,11 +49,11 @@ def main():
     st.markdown("Use the sliders to modify the parameters and see how the frontier changes.")
 
     # Sliders
-    mu_A = st.slider("mu_A (Expected Return of Asset A)", 0.00, 0.20, 0.10, 0.01)
-    mu_B = st.slider("mu_B (Expected Return of Asset B)", 0.00, 0.20, 0.15, 0.01)
-    sigma_A = st.slider("sigma_A (Std Dev of Asset A)", 0.01, 0.40, 0.20, 0.01)
-    sigma_B = st.slider("sigma_B (Std Dev of Asset B)", 0.01, 0.40, 0.30, 0.01)
-    corr_AB = st.slider("corr_AB (Correlation)", -1.0, 1.0, 0.20, 0.05)
+    mu_A = st.slider("Expected Return of Asset A (mu_A)", 0.00, 0.20, 0.10, 0.01)
+    mu_B = st.slider("Expected Return of Asset B (mu_B)", 0.00, 0.20, 0.15, 0.01)
+    sigma_A = st.slider("Std Dev of Asset A (sigma_A)", 0.01, 0.40, 0.20, 0.01)
+    sigma_B = st.slider("Std Dev of Asset B (sigma_B)", 0.01, 0.40, 0.30, 0.01)
+    corr_AB = st.slider("Correlation (corr_AB)", -1.0, 1.0, 0.20, 0.05)
 
     plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
 
