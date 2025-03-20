@@ -44,7 +44,7 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # Shorter labels and smaller font sizes
     ax.set_title('2-Stock Frontier', fontsize=10)
     ax.set_xlabel('Std Dev', fontsize=8)
-    ax.set_ylabel('Expect. Return', fontsize=8)
+    ax.set_ylabel('Exp. Return', fontsize=8)
     ax.tick_params(axis='both', labelsize=7)
     ax.legend(fontsize=7)
 
