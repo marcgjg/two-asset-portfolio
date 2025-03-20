@@ -48,6 +48,10 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     ax.tick_params(axis='both', labelsize=7)
     ax.legend(fontsize=7)
 
+    # Force both axes to start at zero
+    ax.set_xlim(left=0)   # x-axis starts at 0
+    ax.set_ylim(bottom=0) # y-axis starts at 0
+    
     plt.tight_layout()
     st.pyplot(fig)
 
