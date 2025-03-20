@@ -56,7 +56,8 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         y_inef = np.delete(port_returns, idx_min)
 
     else:
-    
+    #
+        
     # ---------- 4) Determine which stock has the HIGHER return ----------
     # so we know which end of the curve is "efficient" (above the MVP).
     #   - If Stock A has higher return: w=1 => that’s the top end.
