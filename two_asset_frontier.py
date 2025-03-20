@@ -83,11 +83,11 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # Random portfolios (gray dots)
     # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
-    # Inefficient portion as dashed red
-    ax.plot(x_inef, y_inef, 'r--', label='Inefficient Portfolios')
-
     # Efficient portion as solid red
     ax.plot(x_ef, y_ef, 'r-', linewidth=2, label='Efficient Frontier')
+
+    # Inefficient portion as dashed red
+    ax.plot(x_inef, y_inef, 'r--', label='Inefficient Portfolios')
 
     # Mark each stock individually (endpoints)
     # Remember: w=0 => Stock B, w=1 => Stock A
