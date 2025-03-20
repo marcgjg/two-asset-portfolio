@@ -81,7 +81,7 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     fig, ax = plt.subplots(figsize=(5, 3))
 
     # Random portfolios (gray dots)
-    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
+    # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
     # Inefficient portion as dashed red
     ax.plot(x_inef, y_inef, 'r--', label='Inefficient')
@@ -98,7 +98,7 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     ax.scatter(mvp_x, mvp_y, s=80, marker='*', color='black', label='Minimum-Variance Portfolio')
 
     ax.set_title("Two-Stock Frontier")
-    ax.set_xlabel("Standard Deviation (Risk)")
+    ax.set_xlabel("Standard Deviation")
     ax.set_ylabel("Expected Return")
     ax.legend(loc='best')
     plt.tight_layout()
