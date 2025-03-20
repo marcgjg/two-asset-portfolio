@@ -33,7 +33,7 @@ def plot_two_asset_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         rand_stdevs.append(np.sqrt(p_var))
 
     # Plot with a smaller figure size
-    fig, ax = plt.subplots(figsize=(4, 3))  # << Reduce the diagram size here
+    fig, ax = plt.subplots(figsize=(3, 2))  # << Reduce the diagram size here
     # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, label='Random Portfolios')
     ax.plot(port_stdevs, port_returns, 'r-', label='Efficient Frontier', linewidth=2)
     
