@@ -79,7 +79,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # 7) Plot
     fig, ax = plt.subplots(figsize=(8, 4))  # WIDER FIGURE
 
-    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
+    # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
     if same_return:
         ax.plot(inef_x, inef_y, 'r--', label='Inefficient Portfolios')
