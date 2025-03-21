@@ -53,7 +53,7 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
     # 5) Check if returns match
     tol = 1e-12
-    same_return = (abs(muA - muB) < tol)
+    same_return = (abs(mu_A - mu_B) < tol)
 
     if same_return:
         # =========== ALL POINTS except the MVP => 'inefficient' ===========
