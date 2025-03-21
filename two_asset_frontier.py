@@ -99,7 +99,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     fig, ax = plt.subplots(figsize=(5, 3))
 
     # Gray scatter => random portfolios
-    # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
+    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
     if same_return:
         # Entire line except MVP => 'inefficient' dashed
@@ -154,7 +154,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Frontier")
+    st.title("Two-Stock Frontier (Horizontal Inefficient Line + Single Efficient Point)")
 
     col_sliders, col_chart = st.columns([2, 3])
     with col_sliders:
