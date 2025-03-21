@@ -121,7 +121,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         prop={'size': 8}         # REDUCE FONT SIZE
     )
 
-    ax.set_title("Two-Stock Frontier (Wide Figure, Smaller Legend)")
+    ax.set_title("Two-Stock Frontier")
     ax.set_xlabel("Standard Deviation")
     ax.set_ylabel("Expected Return")
     plt.tight_layout()
@@ -129,7 +129,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Frontier (Wider Plot + Smaller Legend)")
+    st.title("Two-Stock Frontier")
 
     col_sliders, col_chart = st.columns([2, 3])
     with col_sliders:
