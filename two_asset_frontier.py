@@ -157,8 +157,8 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     # Possibly increase figure size
     # fig.set_size_inches(7, 4)
 
-    plt.tight_layout()
-    st.pyplot(fig)
+    # plt.tight_layout()
+    # st.pyplot(fig)
 
     
     st.pyplot(fig)
