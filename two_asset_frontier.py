@@ -50,7 +50,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     ret_A = frontier_returns[-1]
 
     # 5) Check if returns match
-    tol = 1e-12
+    tol = 1e-6
     same_return = abs(mu_A - mu_B) < tol
 
     # 6) Efficient vs. inefficient
