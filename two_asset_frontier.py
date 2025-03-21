@@ -154,11 +154,11 @@ def main():
     col_sliders, col_chart = st.columns([2, 3])
 
     with col_sliders:
-        st.markdown("### Adjust the Parameters (Tolerance = 1e-7)")
+        st.markdown("### Adjust the Parameters")
         mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.03, 0.01)
         mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.03, 0.01)
-        sigma_A = st.slider("Std Dev of Stock A", 0.01, 0.40, 0.12, 0.01)
-        sigma_B = st.slider("Std Dev of Stock B", 0.01, 0.40, 0.15, 0.01)
+        sigma_A = st.slider("Standard Deviation of Stock A", 0.01, 0.40, 0.12, 0.01)
+        sigma_B = st.slider("Standard Deviation of Stock B", 0.01, 0.40, 0.15, 0.01)
         corr_AB = st.slider("Correlation", -1.0, 1.0, -0.70, 0.05)
 
         st.write("**Note**: If you set both returns to the same value (within tolerance), the efficient frontier should be a single red dot and be equivalent to the minimum-variance portfolio. If you see a segment for the efficient frontier, you may not have set your expected returns to the same value (within tolerance).")
