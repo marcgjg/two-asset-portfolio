@@ -138,6 +138,9 @@ def main():
         mu_A = round(mu_A, 3)
         mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.03, 0.001)
         mu_B = round(mu_B, 3)
+
+        st.write(mu_A, mu_B, mu_A - mu_B)
+        
         sigma_A = st.slider("4td Dev of Stock A", 0.01, 0.40, 0.20, 0.01)
         sigma_B = st.slider("Std Dev of Stock B", 0.01, 0.40, 0.30, 0.01)
         corr_AB = st.slider("Correlation", -1.0, 1.0, 0.20, 0.05)
