@@ -129,7 +129,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Frontier")
+    st.title("Two-Stock Frontier (Wider Plot + Smaller Legend)")
 
     col_sliders, col_chart = st.columns([2, 3])
     with col_sliders:
