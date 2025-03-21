@@ -139,6 +139,8 @@ def main():
         mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.03, 0.001)
         mu_B = round(mu_B, 3)
 
+        mu_A = mu_B = 0.03
+        
         st.write(mu_A, mu_B, mu_A - mu_B)
         
         sigma_A = st.slider("4td Dev of Stock A", 0.01, 0.40, 0.20, 0.01)
