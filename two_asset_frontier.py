@@ -151,6 +151,16 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     ax.set_ylabel("Expected Return")
     plt.tight_layout()
 
+    # Example: place legend to the right
+    ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1), borderaxespad=0)
+
+    # Possibly increase figure size
+    fig.set_size_inches(7, 4)
+
+    plt.tight_layout()
+    st.pyplot(fig)
+
+    
     st.pyplot(fig)
 
 def main():
