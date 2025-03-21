@@ -134,9 +134,11 @@ def main():
     col_sliders, col_chart = st.columns([2, 3])
     with col_sliders:
         st.markdown("### Parameters")
-        mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.09, 0.01)
-        mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.09, 0.01)
-        sigma_A = st.slider("Std Dev of Stock A", 0.01, 0.40, 0.20, 0.01)
+        mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.03, 0.001)
+        mu_A = round(mu_A, 3)
+        mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.03, 0.001)
+        mu_B = round(mu_B, 3)
+        sigma_A = st.slider("4td Dev of Stock A", 0.01, 0.40, 0.20, 0.01)
         sigma_B = st.slider("Std Dev of Stock B", 0.01, 0.40, 0.30, 0.01)
         corr_AB = st.slider("Correlation", -1.0, 1.0, 0.20, 0.05)
 
