@@ -51,39 +51,45 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     std_A = port_stdevs[-1]
     ret_A = port_returns[-1]
 
-    # 5) Determine if returns are effectively the same
+    # 5) Check if returns match
     tol = 1e-12
-    same_return = (abs(mu_A - mu_B) < tol)
+    same_return = (abs(muA - muB) < tol)
 
     if same_return:
-        # ============ CASE: SAME RETURNS => Only MVP is 'Efficient Frontier' ============
-
-        # The entire parametric line (minus MVP) is dashed => 'Inefficient'
-        mask = np.ones_like(port_stdevs, dtype=bool)
+        # =========== ALL POINTS except the MVP => 'inefficient' ===========
+        mask = np.ones_like(stdevs, dtype=bool)
         mask[idx_min] = False  # exclude MVP
-        x_inef = port_stdevs[mask]
-        y_inef = port_returns[mask]
 
-        # We'll put just the single MVP point in 'efficient'
-        x_ef = [mvp_x]
-        y_ef = [mvp_y]
+        x_inef = stdevs[mask]
+        y_inef = returns[mask]
+
+        # The MVP alone => 'efficient frontier'
+        x_ef   = [mvp_x]
+        y_ef   = [mvp_y]
+
+        # For clarity, let's color the line black so you see the difference
+        # (just to emphasize it's "inefficient"). You can change to red if you like.
+        plt.plot(x_inef, y_inef, 'k--', label='Inefficient (same return)')
+
+        # Single point in red for the MVP
+        plt.scatter(x_ef, y_ef, c='r', s=80, label='Efficient Frontier (single point)')
 
     else:
-        # ============ CASE: DIFFERENT RETURNS => Standard logic ============
-
-        # If w=1 => A, w=0 => B
-        if ret_A > ret_B:
-            # A has higher => from MVP to w=1 is efficient
-            x_inef = port_stdevs[:idx_min+1]
-            y_inef = port_returns[:idx_min+1]
-            x_ef   = port_stdevs[idx_min:]
-            y_ef   = port_returns[idx_min:]
+        # =========== Normal logic: whichever stock has higher return => that side is 'efficient' ===========
+        if retA > retB:
+            # A has higher => from w=0..idx_min is inefficient, from idx_min..1 is efficient
+            x_inef = stdevs[:idx_min+1]
+            y_inef = returns[:idx_min+1]
+            x_ef   = stdevs[idx_min:]
+            y_ef   = returns[idx_min:]
         else:
-            # B has higher => from w=0 to MVP is efficient
-            x_ef   = port_stdevs[:idx_min+1]
-            y_ef   = port_returns[:idx_min+1]
-            x_inef = port_stdevs[idx_min:]
-            y_inef = port_returns[idx_min:]
+            x_ef   = stdevs[:idx_min+1]
+            y_ef   = returns[:idx_min+1]
+            x_inef = stdevs[idx_min:]
+            y_inef = returns[idx_min:]
+
+        plt.plot(x_ef, y_ef, 'r-', linewidth=2, label='Efficient Frontier')
+        plt.plot(x_inef, y_inef, 'r--', label='Inefficient')
 
     # 6) Plot
     fig, ax = plt.subplots(figsize=(5, 3))
