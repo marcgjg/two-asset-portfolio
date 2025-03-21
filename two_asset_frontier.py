@@ -134,8 +134,8 @@ def main():
     col_sliders, col_chart = st.columns([2, 3])
     with col_sliders:
         st.markdown("### Parameters")
-        # mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.03, 0.001)
-        # mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.03, 0.001)
+        mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.03, 0.001)
+        mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.03, 0.001)
         mu_A = round(st.slider("Expected Return of Stock A", 0.00, 0.20, 0.03, 0.01), 2)
         mu_B = round(st.slider("Expected Return of Stock A", 0.00, 0.20, 0.03, 0.01), 2)
     
