@@ -7,16 +7,15 @@ st.set_page_config(layout='wide')
 def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     """
     Two-Stock Frontier:
-      - If |mu_A - mu_B| < tol => both have 'same return':
-         * Show the entire horizontal line as dashed (inefficient).
-         * EXCEPT the MVP, which is a single red dot labeled 'Efficient Frontier'.
-      - Otherwise => normal Markowitz logic:
-         * A dashed portion for inefficient,
-         * A solid portion for efficient.
-      - Also random portfolios in gray, plus Stock A, Stock B, and MVP star.
+      - If |mu_A - mu_B| < tol => same-return scenario:
+         * Show entire line as dashed 'Inefficient Portfolios'
+           except for the Minimum-Variance Portfolio (MVP),
+           which is a single red dot labeled 'Efficient Frontier'.
+      - Otherwise => normal Markowitz logic (solid vs. dashed).
+      - Legend is placed outside the axes to avoid covering the chart.
     """
 
-    # 1) Parametric frontier for w in [0,1]
+    # 1) Parametric Frontier (weights in [0..1])
     cov_AB = corr_AB * sigma_A * sigma_B
     n_points = 200
     weights = np.linspace(0, 1, n_points)
@@ -38,18 +37,18 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     mvp_x   = frontier_stdevs[idx_min]
     mvp_y   = frontier_returns[idx_min]
 
-    # 3) Random portfolios (for illustration)
+    # 3) Random Portfolios (gray scatter for illustration)
     n_portfolios = 3000
-    rand_weights = np.random.rand(n_portfolios)
+    rand_w = np.random.rand(n_portfolios)
     rand_returns = []
     rand_stdevs  = []
-    for w in rand_weights:
-        rp_ret = w * mu_A + (1 - w) * mu_B
-        rp_var = (w**2)*(sigma_A**2) + ((1-w)**2)*(sigma_B**2) + 2*w*(1-w)*cov_AB
-        rand_returns.append(rp_ret)
-        rand_stdevs.append(np.sqrt(rp_var))
+    for w in rand_w:
+        rr = w * mu_A + (1 - w) * mu_B
+        rv = (w**2)*(sigma_A**2) + ((1-w)**2)*(sigma_B**2) + 2*w*(1-w)*cov_AB
+        rand_returns.append(rr)
+        rand_stdevs.append(np.sqrt(rv))
 
-    # 4) Identify Stock A & Stock B from the param arrays
+    # 4) Identify Stock A & Stock B from param endpoints
     #    (w=0 => B, w=1 => A)
     std_B = frontier_stdevs[0]
     ret_B = frontier_returns[0]
@@ -60,31 +59,23 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     tol = 1e-12
     same_return = abs(mu_A - mu_B) < tol
 
-    # We'll store the 'efficient' x,y in ef_x, ef_y
-    # and 'inefficient' in inef_x, inef_y
-    # Then we'll plot accordingly
+    # We'll produce ef_x, ef_y for 'Efficient Frontier', inef_x, inef_y for 'Inefficient'
     if same_return:
-        #
-        # ========== CASE: Both returns match => entire line is same return ========== 
-        # We'll label the entire param line as 'inefficient' EXCEPT the MVP
-        #
-        # 1) Create a mask that excludes the MVP from that line
+        # ========== SAME RETURN => entire horizontal line = same return.
+        # Mark everything as 'inefficient' except the MVP.
         mask = np.ones_like(frontier_stdevs, dtype=bool)
         mask[idx_min] = False  # exclude MVP
 
         inef_x = frontier_stdevs[mask]
         inef_y = frontier_returns[mask]
 
-        # 2) MVP alone => 'Efficient Frontier'
+        # The MVP alone => single red dot for 'Efficient Frontier'
         ef_x = [mvp_x]
         ef_y = [mvp_y]
 
     else:
-        #
-        # ========== CASE: Different returns => normal Markowitz logic ==========
-        #
+        # ========== DIFFERENT RETURNS => normal Markowitz logic
         if mu_A > mu_B:
-            # If Stock A has higher return => from MVP..end is efficient
             inef_x = frontier_stdevs[:idx_min+1]
             inef_y = frontier_returns[:idx_min+1]
             ef_x   = frontier_stdevs[idx_min:]
@@ -95,40 +86,37 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
             inef_x = frontier_stdevs[idx_min:]
             inef_y = frontier_returns[idx_min:]
 
-    # 6) Plot 
+    # 6) Plot
     fig, ax = plt.subplots(figsize=(5, 3))
 
-    # Gray scatter => random portfolios
+    # Random portfolios
     ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
     if same_return:
-        # Entire line except MVP => 'inefficient' dashed
+        # Everything except MVP => dashed, labeled 'Inefficient Portfolios'
         ax.plot(inef_x, inef_y, 'r--', label='Inefficient Portfolios')
 
-        # MVP => single red dot for 'Efficient Frontier'
-        # (no line, just a dot)
-        ax.scatter(ef_x, ef_y, color='red', s=60, label='Efficient Frontier')
+        # Single point => 'Efficient Frontier'
+        ax.scatter(ef_x, ef_y, color='red', s=70, label='Efficient Frontier')
 
-        # Also mark MVP with black star (overlap same point)
-        ax.scatter(ef_x, ef_y, marker='*', s=80, color='black', label='Minimum-Variance Portfolio')
-
+        # Also black star for MVP if you like:
+        ax.scatter(ef_x, ef_y, marker='*', s=90, color='black', label='Minimum-Variance Portfolio')
     else:
-        # normal logic => solid portion for 'efficient', dashed for 'inefficient'
+        # normal logic => solid portion, dashed portion
         ax.plot(ef_x, ef_y, 'r-', linewidth=2, label='Efficient Frontier')
         ax.plot(inef_x, inef_y, 'r--', label='Inefficient Portfolios')
 
-        # Mark MVP with black star
-        ax.scatter([mvp_x], [mvp_y], s=80, marker='*', color='black', label='Minimum-Variance Portfolio')
+        # MVP => black star
+        ax.scatter([mvp_x], [mvp_y], marker='*', s=90, color='black', label='Minimum-Variance Portfolio')
 
-    # Stock A, Stock B
+    # Mark Stock A & B
     ax.scatter(std_A, ret_A, marker='o', s=50, label='Stock A')
     ax.scatter(std_B, ret_B, marker='o', s=50, label='Stock B')
 
-    # Force Legend Order
+    # 7) Force Legend Order
     handles, labels = ax.get_legend_handles_labels()
-    label2handle = dict(zip(labels, handles))
+    label_to_handle = dict(zip(labels, handles))
 
-    # Just in case some labels aren't present in a scenario
     desired = [
         'Efficient Frontier',
         'Inefficient Portfolios',
@@ -140,13 +128,20 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     new_handles = []
     new_labels  = []
     for d in desired:
-        if d in label2handle:
-            new_handles.append(label2handle[d])
+        if d in label_to_handle:
+            new_handles.append(label_to_handle[d])
             new_labels.append(d)
 
-    ax.legend(new_handles, new_labels, loc='best')
+    # 8) Place Legend *Outside* the Plot to Avoid Overlap
+    ax.legend(
+        new_handles,
+        new_labels,
+        loc='upper left',
+        bbox_to_anchor=(1.04, 1),  # shift legend outside (to the right)
+        borderaxespad=0
+    )
 
-    ax.set_title("Two-Stock Frontier")
+    ax.set_title("Two-Stock Frontier (Single Point When Returns Match, Legend Outside)")
     ax.set_xlabel("Standard Deviation")
     ax.set_ylabel("Expected Return")
     plt.tight_layout()
@@ -154,7 +149,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Frontier (Horizontal Inefficient Line + Single Efficient Point)")
+    st.title("Two-Stock Frontier with Outside Legend")
 
     col_sliders, col_chart = st.columns([2, 3])
     with col_sliders:
