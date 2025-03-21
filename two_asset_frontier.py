@@ -82,7 +82,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     fig, ax = plt.subplots(figsize=(8, 4))  # wide figure
 
     # Scatter the random portfolios
-    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
+    # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
     if same_return:
         # entire line => dashed red 'Inefficient Portfolios'
@@ -139,7 +139,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         prop={'size': 8}  # smaller legend text
     )
 
-    ax.set_title("Two-Stock Frontier (Single Point if Returns Match)")
+    ax.set_title("Two-Stock Frontier")
     ax.set_xlabel("Standard Deviation")
     ax.set_ylabel("Expected Return")
     plt.tight_layout()
@@ -148,7 +148,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Frontier (All-in-One Final)")
+    st.title("Two-Stock Frontier")
 
     # Two columns: sliders on the left, chart on the right
     col_sliders, col_chart = st.columns([2, 3])
@@ -161,7 +161,7 @@ def main():
         sigma_B = st.slider("Std Dev of Stock B", 0.01, 0.40, 0.15, 0.01)
         corr_AB = st.slider("Correlation", -1.0, 1.0, -0.70, 0.05)
 
-        st.write("**Tip**: If you set both returns to 0.03 (within tolerance), you should see a dashed horizontal line plus a single red dot at the MVP. If you still see a segment, try adjusting the tolerance or rounding the returns.")
+        st.write("**Note**: If you set both returns to the same value (within tolerance), the efficient frontier should be a single red dot and be equivalent to the minimum-variance portfolio. If you see a segment for the efficient frontier, you may not have set your expected returns to the same value (within tolerance).")
 
     with col_chart:
         plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
