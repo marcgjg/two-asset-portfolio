@@ -135,12 +135,10 @@ def main():
     with col_sliders:
         st.markdown("### Parameters")
         mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.03, 0.001)
-        mu_A = round(mu_A, 3)
         mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.03, 0.001)
-        mu_B = round(mu_B, 3)
-
-        mu_A = mu_B = 0.03
-        
+        mu_A = round(st.slider("Return A", 0.00, 0.20, 0.03, 0.01), 2)
+        mu_B = round(st.slider("Return B", 0.00, 0.20, 0.03, 0.01), 2)
+    
         st.write(mu_A, mu_B, mu_A - mu_B)
         
         sigma_A = st.slider("4td Dev of Stock A", 0.01, 0.40, 0.20, 0.01)
