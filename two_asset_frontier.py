@@ -2,17 +2,16 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Make the page layout wide so columns can be side-by-side
 st.set_page_config(layout='wide')
 
-def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
+def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     """
-    Displays a 2-stock mean–variance frontier:
-      - Random portfolios (gray points)
-      - Special case: if mu_A == mu_B, only the MVP is 'Efficient Frontier' (a single point).
-      - Otherwise, a split frontier with 'Efficient' (solid red) and 'Inefficient' (dashed red).
-      - Stock A, Stock B individually, plus a star for the MVP.
-      - Legend order forced to [Efficient Frontier, Inefficient Portfolios, Stock A, Stock B, MVP].
+    Two-Stock Mean–Variance Frontier:
+      - If |mu_A - mu_B| < tolerance => Single red point (MVP) as 'Efficient Frontier';
+        entire remainder of line is dashed 'inefficient.'
+      - Otherwise => standard Markowitz split:
+        whichever stock has the higher return determines which side is 'efficient.'
+      - Also shows random portfolios in gray for illustration.
     """
 
     # 1) Parametric frontier for w in [0,1]
@@ -20,130 +19,131 @@ def plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     n_points = 200
     weights = np.linspace(0, 1, n_points)
 
-    port_returns = []
-    port_stdevs  = []
+    frontier_returns = []
+    frontier_stdevs  = []
+
     for w in weights:
-        p_return = w * mu_A + (1 - w) * mu_B
-        p_var    = (w**2)*(sigma_A**2) + ((1-w)**2)*(sigma_B**2) + 2*w*(1-w)*cov_AB
-        port_returns.append(p_return)
-        port_stdevs.append(np.sqrt(p_var))
+        # Return:
+        r = w * mu_A + (1 - w) * mu_B
+        # Variance:
+        v = (w**2)*(sigma_A**2) + ((1-w)**2)*(sigma_B**2) + 2*w*(1-w)*cov_AB
+        frontier_returns.append(r)
+        frontier_stdevs.append(np.sqrt(v))
 
-    port_returns = np.array(port_returns)
-    port_stdevs  = np.array(port_stdevs)
+    frontier_returns = np.array(frontier_returns)
+    frontier_stdevs  = np.array(frontier_stdevs)
 
-    # 2) Minimum-Variance Portfolio (MVP)
-    idx_min = np.argmin(port_stdevs)
-    mvp_x   = port_stdevs[idx_min]
-    mvp_y   = port_returns[idx_min]
+    # 2) Find the MVP (lowest std dev)
+    idx_min = np.argmin(frontier_stdevs)
+    mvp_x = frontier_stdevs[idx_min]
+    mvp_y = frontier_returns[idx_min]
 
-    # 3) Generate random portfolios (for illustration)
-    n_portfolios = 3000
-    rand_w = np.random.rand(n_portfolios)
+    # 3) Random portfolios (optional, for illustration)
+    n_random = 3000
+    rand_weights = np.random.rand(n_random)
     rand_returns = []
     rand_stdevs  = []
-    for w in rand_w:
-        rp_return = w * mu_A + (1 - w) * mu_B
-        rp_var    = (w**2)*(sigma_A**2) + ((1-w)**2)*(sigma_B**2) + 2*w*(1-w)*cov_AB
-        rand_returns.append(rp_return)
-        rand_stdevs.append(np.sqrt(rp_var))
+    for w in rand_weights:
+        rr = w * mu_A + (1 - w) * mu_B
+        rv = (w**2)*(sigma_A**2) + ((1-w)**2)*(sigma_B**2) + 2*w*(1-w)*cov_AB
+        rand_returns.append(rr)
+        rand_stdevs.append(np.sqrt(rv))
 
-    # 4) Identify Stock A & Stock B from param arrays
-    #    (w=0 => B; w=1 => A)
-    std_B, ret_B = port_stdevs[0],  port_returns[0]
-    std_A, ret_A = port_stdevs[-1], port_returns[-1]
-
-    # 5) Check if returns are effectively equal
+    # 4) Identify user-chosen returns are "equal" or not
     tol = 1e-12
     same_return = (abs(mu_A - mu_B) < tol)
 
     if same_return:
-        # =========== CASE: SAME RETURNS => only MVP is 'efficient' ===========
-        # Mask out the MVP from the line
-        mask = np.ones_like(port_stdevs, dtype=bool)
-        mask[idx_min] = False
+        # =============== CASE A: SAME RETURNS => ONLY MVP is 'efficient' ===============
+        # Everything except MVP => 'inefficient'
+        mask = np.ones_like(frontier_stdevs, dtype=bool)
+        mask[idx_min] = False  # exclude MVP
 
-        x_inef = port_stdevs[mask]
-        y_inef = port_returns[mask]
+        inef_x = frontier_stdevs[mask]
+        inef_y = frontier_returns[mask]
 
-        # The MVP alone => 'Efficient Frontier' as a single point
-        x_ef = [mvp_x]
-        y_ef = [mvp_y]
+        # The single 'efficient' point is the MVP
+        ef_x = [mvp_x]
+        ef_y = [mvp_y]
 
     else:
-        # =========== CASE: DIFFERENT RETURNS => normal Markowitz logic ===========
-        if ret_A > ret_B:
-            # Stock A has higher return => from MVP to w=1 is 'efficient'
-            x_inef = port_stdevs[:idx_min+1]
-            y_inef = port_returns[:idx_min+1]
-            x_ef   = port_stdevs[idx_min:]
-            y_ef   = port_returns[idx_min:]
+        # =============== CASE B: DIFFERENT RETURNS => standard Markowitz split ===============
+        # We'll compare the user-chosen returns directly to see which is higher
+        # (no need to rely on the param endpoints).
+        if mu_A > mu_B:
+            # If Stock A has the higher return => from MVP..w=1 is 'efficient'
+            inef_x = frontier_stdevs[:idx_min+1]
+            inef_y = frontier_returns[:idx_min+1]
+            ef_x   = frontier_stdevs[idx_min:]
+            ef_y   = frontier_returns[idx_min:]
         else:
-            # Stock B has higher return => from w=0 to MVP is 'efficient'
-            x_ef   = port_stdevs[:idx_min+1]
-            y_ef   = port_returns[:idx_min+1]
-            x_inef = port_stdevs[idx_min:]
-            y_inef = port_returns[idx_min:]
+            # If Stock B has the higher return => from w=0..MVP is 'efficient'
+            ef_x   = frontier_stdevs[:idx_min+1]
+            ef_y   = frontier_returns[:idx_min+1]
+            inef_x = frontier_stdevs[idx_min:]
+            inef_y = frontier_returns[idx_min:]
 
-    # 6) Plot
+    # 5) Plot
     fig, ax = plt.subplots(figsize=(5, 3))
 
-    # Random portfolios in gray
-    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray')
+    # Gray scatter: random portfolios
+    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
-    # 'Efficient Frontier' => solid red (but if same_return == True, it's just 1 point)
-    #   We'll use 'plot' + 'scatter' logic:
-    #   - If there's >1 point, you get a line.
-    #   - If there's exactly 1 point, you get just a dot.
-    ax.plot(x_ef, y_ef, 'r-', linewidth=2, label='Efficient Frontier')
+    # 'Efficient Frontier' => red solid line (or single red point if only 1)
+    ax.plot(ef_x, ef_y, 'r-', linewidth=2, label='Efficient Frontier')
 
-    # 'Inefficient Portfolios' => dashed red
-    ax.plot(x_inef, y_inef, 'r--', label='Inefficient Portfolios')
+    # 'Inefficient' => dashed red
+    ax.plot(inef_x, inef_y, 'r--', label='Inefficient Portfolios')
 
-    # Mark Stock A and Stock B
-    ax.scatter(std_A, ret_A, s=50, marker='o', label='Stock A')
-    ax.scatter(std_B, ret_B, s=50, marker='o', label='Stock B')
+    # Mark MVP with black star
+    ax.scatter(mvp_x, mvp_y, marker='*', s=80, color='black', label='Minimum-Variance Portfolio')
 
-    # Mark the MVP with a black star
-    ax.scatter(mvp_x, mvp_y, s=80, marker='*', color='black', label='Minimum-Variance Portfolio')
+    # Mark each stock individually (endpoints in param approach?)
+    # But let's rely on user input for naming. We can just put them at:
+    #  w=1 => Stock A, w=0 => Stock B from the param arrays:
+    std_B = frontier_stdevs[0]   # w=0
+    ret_B = frontier_returns[0]
+    std_A = frontier_stdevs[-1]  # w=1
+    ret_A = frontier_returns[-1]
+    ax.scatter(std_A, ret_A, marker='o', s=50, label='Stock A')
+    ax.scatter(std_B, ret_B, marker='o', s=50, label='Stock B')
 
-    # Force the legend order
+    # We want the legend in a specific order:
     handles, labels = ax.get_legend_handles_labels()
-    label_to_handle = dict(zip(labels, handles))
-    desired_labels = [
+    lab2hand = dict(zip(labels, handles))
+    desired_order = [
         'Efficient Frontier',
         'Inefficient Portfolios',
+        'Random Portfolios',
         'Stock A',
         'Stock B',
         'Minimum-Variance Portfolio'
     ]
-    # Rebuild the handles in the desired order
-    new_handles = [label_to_handle[lbl] for lbl in desired_labels]
-    ax.legend(new_handles, desired_labels, loc='best')
+    new_handles = [lab2hand[lbl] for lbl in desired_order if lbl in lab2hand]
+    new_labels  = [lbl           for lbl in desired_order if lbl in lab2hand]
+    ax.legend(new_handles, new_labels, loc='best')
 
     ax.set_title("Two-Stock Frontier")
     ax.set_xlabel("Standard Deviation")
     ax.set_ylabel("Expected Return")
     plt.tight_layout()
 
-    # Render the figure in Streamlit
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Frontier (Same Returns => Single Efficient Point)")
+    st.title("Two-Stock Frontier (Single Point If Same Returns)")
 
-    # Two columns: slider inputs on the left, chart on the right
     col_sliders, col_chart = st.columns([2, 3])
-
     with col_sliders:
-        st.markdown("### Adjust the Parameters")
+        st.markdown("### Choose Parameters")
         mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.09, 0.01)
         mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.09, 0.01)
-        sigma_A = st.slider("Standard Deviation of Stock A", 0.01, 0.40, 0.20, 0.01)
-        sigma_B = st.slider("Standard Deviation of Stock B", 0.01, 0.40, 0.30, 0.01)
-        corr_AB = st.slider("Correlation Between Stocks A and B", -1.0, 1.0, 0.20, 0.05)
+        sigma_A = st.slider("Std Dev of Stock A", 0.01, 0.40, 0.20, 0.01)
+        sigma_B = st.slider("Std Dev of Stock B", 0.01, 0.40, 0.30, 0.01)
+        corr_AB = st.slider("Correlation", -1.0, 1.0, 0.20, 0.05)
 
     with col_chart:
-        plot_two_stock_efficient_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
+        plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
