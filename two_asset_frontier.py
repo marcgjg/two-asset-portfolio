@@ -123,8 +123,8 @@ def main():
         # Sliders with step=0.01
         mu_A = st.slider("Expected Return of Stock A", 0.00, 0.20, 0.09, step=0.01)
         mu_B = st.slider("Expected Return of Stock B", 0.00, 0.20, 0.10, step=0.01)
-        sigma_A = st.slider("Std Dev of Stock A", 0.01, 0.40, 0.20, step=0.01)
-        sigma_B = st.slider("Std Dev of Stock B", 0.01, 0.40, 0.30, step=0.01)
+        sigma_A = st.slider("Standard Deviation of Stock A", 0.01, 0.40, 0.20, step=0.01)
+        sigma_B = st.slider("Standard Deviation of Stock B", 0.01, 0.40, 0.30, step=0.01)
         corr_AB = st.slider("Correlation", -1.0, 1.0, 0.20, step=0.05)
 
         # 1) We only want to forbid EXACT same returns (like 0.09 vs. 0.09).
