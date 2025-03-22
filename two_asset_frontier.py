@@ -108,7 +108,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         prop={'size': 8}  # smaller font
     )
 
-    ax.set_title("Two-Stock Frontier (Refuse Same Returns, Step=0.01)")
+    ax.set_title("Two-Stock Frontier")
     ax.set_xlabel("Standard Deviation")
     ax.set_ylabel("Expected Return")
     plt.tight_layout()
@@ -117,7 +117,6 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
 def main():
     st.title("Two-Stock Frontier")
-    st.write("**Note**: Sliders move in 0.01 increments and picking identical returns is disallowed.")
 
     col_sliders, col_chart = st.columns([2, 3])
     with col_sliders:
