@@ -65,7 +65,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     fig, ax = plt.subplots(figsize=(8, 4))
 
     # Random portfolios (gray scatter)
-    ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
+    # ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
     # Efficient vs. Inefficient lines
     ax.plot(ef_x, ef_y, 'r-', linewidth=2, label='Efficient Frontier')
