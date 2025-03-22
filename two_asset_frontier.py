@@ -1,80 +1,84 @@
+import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-def two_stock_frontier(muA, muB, sigmaA, sigmaB, rho):
-    """
-    Minimal example that forcibly shows only one 'efficient' point
-    if muA == muB, or a segment otherwise.
-    No random portfolios, no legend reordering, no Streamlit – just basic Matplotlib.
-    """
+st.set_page_config(layout='wide')
 
-    # Parametric frontier
-    covAB = rho * sigmaA * sigmaB
-    n_points = 200
-    weights = np.linspace(0, 1, n_points)
+def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
+    # 1) param frontier
+    cov_AB = corr_AB * sigma_A * sigma_B
+    w = np.linspace(0, 1, 200)
+    frontier_returns = []
+    frontier_stdevs  = []
 
-    rets = []
-    stds = []
-    for w in weights:
-        r = w*muA + (1-w)*muB
-        v = (w**2)*(sigmaA**2) + ((1-w)**2)*(sigmaB**2) + 2*w*(1-w)*covAB
-        rets.append(r)
-        stds.append(np.sqrt(v))
+    for x in w:
+        r = x*mu_A + (1 - x)*mu_B
+        v = (x**2)*(sigma_A**2) + ((1 - x)**2)*(sigma_B**2) + 2*x*(1 - x)*cov_AB
+        frontier_returns.append(r)
+        frontier_stdevs.append(np.sqrt(v))
 
-    rets = np.array(rets)
-    stds = np.array(stds)
+    frontier_returns = np.array(frontier_returns)
+    frontier_stdevs  = np.array(frontier_stdevs)
 
-    # MVP
-    idx_min = np.argmin(stds)
-    mvp_x   = stds[idx_min]
-    mvp_y   = rets[idx_min]
+    # 2) find MVP
+    idx_min = np.argmin(frontier_stdevs)
+    mvp_x = frontier_stdevs[idx_min]
+    mvp_y = frontier_returns[idx_min]
 
-    # Decide if returns are 'same'
+    # 3) check same return
     tol = 1e-12
-    same_return = (abs(muA - muB) < tol)
+    same_return = (abs(mu_A - mu_B) < tol)
 
-    # If same returns => entire line is 'inefficient' except MVP
+    fig, ax = plt.subplots(figsize=(6, 4))
+
     if same_return:
-        mask = np.ones_like(stds, dtype=bool)
+        # entire line => dashed
+        mask = np.ones_like(frontier_stdevs, dtype=bool)
         mask[idx_min] = False
-        x_inef = stds[mask]
-        y_inef = rets[mask]
+        x_inef = frontier_stdevs[mask]
+        y_inef = frontier_returns[mask]
 
+        # MVP alone => single red dot
         x_ef = [mvp_x]
         y_ef = [mvp_y]
 
-        plt.plot(x_inef, y_inef, 'r--', label='Inefficient')
-        plt.plot(x_ef, y_ef, 'ro', label='Efficient Frontier (single point)')
-        plt.plot(mvp_x, mvp_y, 'k*', label='MVP')  # black star on same point
+        ax.plot(x_inef, y_inef, 'r--', label='Inefficient')
+        ax.plot(x_ef, y_ef, 'ro', label='Efficient Frontier (single point)')
+
     else:
         # normal logic
-        # check which is higher from the direct user input
-        if muA > muB:
-            x_inef = stds[:idx_min+1]
-            y_inef = rets[:idx_min+1]
-            x_ef   = stds[idx_min:]
-            y_ef   = rets[idx_min:]
+        if mu_A > mu_B:
+            x_inef = frontier_stdevs[:idx_min+1]
+            y_inef = frontier_returns[:idx_min+1]
+            x_ef   = frontier_stdevs[idx_min:]
+            y_ef   = frontier_returns[idx_min:]
         else:
-            x_ef   = stds[:idx_min+1]
-            y_ef   = rets[:idx_min+1]
-            x_inef = stds[idx_min:]
-            y_inef = rets[idx_min:]
+            x_ef   = frontier_stdevs[:idx_min+1]
+            y_ef   = frontier_returns[:idx_min+1]
+            x_inef = frontier_stdevs[idx_min:]
+            y_inef = frontier_returns[idx_min:]
 
-        plt.plot(x_inef, y_inef, 'r--', label='Inefficient')
-        plt.plot(x_ef, y_ef,   'r-', label='Efficient Frontier')
-        plt.plot(mvp_x, mvp_y, 'k*', label='MVP')
+        ax.plot(x_inef, y_inef, 'r--', label='Inefficient')
+        ax.plot(x_ef, y_ef, 'r-', label='Efficient Frontier')
 
-    plt.xlabel('Std Dev')
-    plt.ylabel('Return')
-    plt.title(f"muA={muA}, muB={muB}, sigmaA={sigmaA}, sigmaB={sigmaB}, rho={rho}")
-    plt.legend()
-    plt.show()
+    ax.plot(mvp_x, mvp_y, 'k*', label='MVP')
+    ax.set_xlabel('Std Dev')
+    ax.set_ylabel('Return')
 
-if __name__ == '__main__':
-    # Hard-code two scenarios:
+    ax.set_title(f"muA={mu_A}, muB={mu_B}, sigmaA={sigma_A}, sigmaB={sigma_B}, corr={corr_AB}")
+    ax.legend()
+    st.pyplot(fig)
 
-    # ====== CASE 1: same returns => only 1 efficient point ======
-    two_stock_frontier(muA=0.03, muB=0.03, sigmaA=0.12, sigmaB=0.15, rho=-0.7)
+def main():
+    st.title("Minimal Single-Point Frontier if Returns Match")
 
-    # ====== CASE 2: different returns => a segment for the efficient portion ======
-    two_stock_frontier(muA=0.03, muB=0.04, sigmaA=0.12, sigmaB=0.15, rho=-0.7)
+    mu_A = st.slider("Stock A Return", 0.00, 0.20, 0.03, 0.01)
+    mu_B = st.slider("Stock B Return", 0.00, 0.20, 0.03, 0.01)
+    sigma_A = st.slider("Stock A Std Dev", 0.01, 0.40, 0.12, 0.01)
+    sigma_B = st.slider("Stock B Std Dev", 0.01, 0.40, 0.15, 0.01)
+    corr_AB = st.slider("Correlation", -1.0, 1.0, -0.70, 0.05)
+
+    plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
+
+if __name__ == "__main__":
+    main()
