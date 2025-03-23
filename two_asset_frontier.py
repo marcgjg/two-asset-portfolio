@@ -55,10 +55,17 @@ else:
         random_vols = np.sqrt(random_weights**2 * sigma_a**2 + (1-random_weights)**2 * sigma_b**2 + 2*random_weights*(1-random_weights)*cov)
         ax.scatter(random_vols*100, random_returns*100, color='gray', alpha=0.3, s=10)
 
+# Plot individual stocks
+ax.scatter(sigma_a*100, er_a*100, color='blue', s=100, label='Stock A', marker='o')
+ax.scatter(sigma_b*100, er_b*100, color='green', s=100, label='Stock B', marker='s')
+
 # Formatting
 ax.set_xlabel('Volatility (%)', fontweight='bold')
 ax.set_ylabel('Return (%)', fontweight='bold')
-ax.set_title(f"Efficient Frontier | MVP at ({mvp_vol*100:.1f}%, {mvp_return*100:.1f}%)", pad=20, fontsize=14)
+ax.set_title(f"Efficient Frontier | MVP at ({mvp_vol*100:.1f}%, {mvp_return*100:.1f}%)\n"
+             f"Stock A: ({sigma_a*100:.1f}%, {er_a*100:.1f}%) | "
+             f"Stock B: ({sigma_b*100:.1f}%, {er_b*100:.1f}%)", 
+             pad=20, fontsize=12)
 ax.grid(True, alpha=0.3)
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 
