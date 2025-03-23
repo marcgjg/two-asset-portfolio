@@ -8,17 +8,13 @@ st.set_page_config(layout="wide")
 # Create columns for sliders and plot
 col1, col2 = st.columns([2, 6])
 
-# Add padding to center sliders vertically
+# Define sliders for inputs
 with col1:
-    for _ in range(5):  # Adjust this number to move sliders up or down
-        st.text('')
-
-    # Define sliders for inputs
-    mu_A = st.slider('Expected Return of Stock A (%)', min_value=0.0, max_value=50.0, value=7.90, step=0.1)
-    mu_B = st.slider('Expected Return of Stock B (%)', min_value=0.0, max_value=50.0, value=8.20, step=0.1)
-    sigma_A = st.slider('Standard Deviation of Stock A (%)', min_value=0.0, max_value=50.0, value=10.00, step=0.1)
-    sigma_B = st.slider('Standard Deviation of Stock B (%)', min_value=0.0, max_value=50.0, value=13.90, step=0.1)
-    rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.74, step=0.01)
+    mu_A = st.slider('Expected Return of Stock A (%)', min_value=0.0, max_value=50.0, value=8.90, step=0.1)
+    mu_B = st.slider('Expected Return of Stock B (%)', min_value=0.0, max_value=50.0, value=9.20, step=0.1)
+    sigma_A = st.slider('Standard Deviation of Stock A (%)', min_value=0.0, max_value=50.0, value=7.90, step=0.1)
+    sigma_B = st.slider('Standard Deviation of Stock B (%)', min_value=0.0, max_value=50.0, value=8.90, step=0.1)
+    rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=-1.0, step=0.01)
 
 # Convert sliders back to decimal form for calculations
 mu_A /= 100
@@ -38,6 +34,11 @@ portfolio_stds = np.sqrt(
 # Compute Minimum Variance Portfolio (MVP)
 w_star = (sigma_B**2 - rho * sigma_A * sigma_B) / (sigma_A**2 + sigma_B**2 - 2 * rho * sigma_A * sigma_B)
 w_star = max(0, min(w_star, 1))  # Ensure no short sales
+
+# Special handling for perfect negative correlation
+if rho == -1:
+    w_star = sigma_B / (sigma_A + sigma_B)  # Correct formula for rho = -1
+
 mvp_return = w_star * mu_A + (1 - w_star) * mu_B
 mvp_std = np.sqrt(
     w_star**2 * sigma_A**2 +
