@@ -72,7 +72,7 @@ try:
         ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
         ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
         ax.plot(efficient_stds, efficient_returns, color='red', label='Efficient Frontier')
-        ax.plot(inefficient_stds, inefficient_returns, color='red', linestyle='--', label='Inefficient Frontier')
+        ax.plot(inefficient_stds, inefficient_returns, color='red', linestyle='--', label='Inefficient Portfolio')
         ax.scatter(mvp_std, mvp_return, marker='*', color='black')
         ax.scatter(mvp_std, mvp_return, color='red', label=f'MVP ({mvp_std:.2f}, {mvp_return:.2f})')
 
