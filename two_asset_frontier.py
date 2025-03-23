@@ -37,7 +37,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         mask[idx_min] = False
         inef_x = frontier_stdevs[mask]
         inef_y = frontier_returns[mask]
-        ax.plot(inef_x, inef_y, 'r--', label='Inefficient Portfolios')
+        ax.plot(inef_x, inef_y, 'r--', label='Inefficient Portfolios!!!')
 
         # Plot single efficient point (MVP) using scatter
         ax.scatter([mvp_x], [mvp_y], color='red', s=70, label='Efficient Frontier')
