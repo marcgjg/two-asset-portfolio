@@ -27,7 +27,8 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
 
     # Check if expected returns are the same
     tol = 1e-12
-    same_return = abs(mu_A - mu_B) < tol
+    # same_return = abs(mu_A - mu_B) < tol
+    same_return = mu_A - mu_B
 
     fig, ax = plt.subplots(figsize=(8, 4))
 
