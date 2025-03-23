@@ -126,8 +126,14 @@ def main():
         sigma_B = st.slider("Standard Deviation of Stock B", 0.01, 0.40, 0.21, step=0.01)
         corr_AB = st.slider("Correlation Coefficient", -1.0, 1.0, 0.60, step=0.05)
 
-        # Display values and their difference
+        tol = 1e-12
+        same_return = abs(mu_A - mu_B) < tol
+
         st.write(f"mu_A = {mu_A}, mu_B = {mu_B}, difference = {mu_A - mu_B}")
+        if same_return:
+            st.success("The two expected returns are considered identical.")
+        else:
+            st.info("The two expected returns are considered different.")
     
     with col_chart:
         plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB)
