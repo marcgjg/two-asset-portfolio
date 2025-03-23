@@ -20,30 +20,34 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     frontier_returns = np.array(frontier_returns)
     frontier_stdevs = np.array(frontier_stdevs)
 
-    # Minimum-variance portfolio (MVP)
+    # Minimum-Variance Portfolio (MVP)
     idx_min = np.argmin(frontier_stdevs)
     mvp_x = frontier_stdevs[idx_min]
     mvp_y = frontier_returns[idx_min]
 
-    # Check if expected returns are the same
+    # Compare returns after rounding
+    rounded_mu_A = round(mu_A, 6)
+    rounded_mu_B = round(mu_B, 6)
     tol = 1e-12
-    same_return = abs(mu_A - mu_B) < tol
+    same_return = abs(rounded_mu_A - rounded_mu_B) < tol
 
     fig, ax = plt.subplots(figsize=(8, 4))
 
     if same_return:
-        # Plot inefficient line (excluding MVP)
+        # MVP is the only efficient portfolio
+        # The rest of the frontier is inefficient
         mask = np.ones_like(frontier_stdevs, dtype=bool)
         mask[idx_min] = False
         inef_x = frontier_stdevs[mask]
         inef_y = frontier_returns[mask]
-        ax.plot(inef_x, inef_y, 'r--', label='Inefficient Portfolios!!!')
+        ef_x = [mvp_x]
+        ef_y = [mvp_y]
 
-        # Plot single efficient point (MVP) using scatter
-        ax.scatter([mvp_x], [mvp_y], color='red', s=70, label='Efficient Frontier')
+        ax.plot(inef_x, inef_y, 'r--', label='Inefficient Portfolios')
+        ax.scatter(ef_x, ef_y, color='red', s=70, label='Efficient Frontier')
 
     else:
-        # Standard logic
+        # Standard frontier logic
         if mu_A > mu_B:
             inef_x = frontier_stdevs[:idx_min+1]
             inef_y = frontier_returns[:idx_min+1]
@@ -70,10 +74,10 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
             rand_stdevs.append(np.sqrt(v))
         ax.scatter(rand_stdevs, rand_returns, alpha=0.2, s=10, color='gray', label='Random Portfolios')
 
-    # Mark MVP
+    # MVP
     ax.scatter(mvp_x, mvp_y, marker='*', s=90, color='black', label='Minimum-Variance Portfolio')
 
-    # Mark Stock A and Stock B
+    # Stock A (w=1), Stock B (w=0)
     std_A = frontier_stdevs[-1]
     ret_A = frontier_returns[-1]
     std_B = frontier_stdevs[0]
@@ -124,10 +128,14 @@ def main():
         sigma_B = st.slider("Standard Deviation of Stock B", 0.01, 0.40, 0.25, step=0.01)
         corr_AB = st.slider("Correlation Coefficient", -1.0, 1.0, -0.40, step=0.05)
 
-        # Display the check for matching returns
-        tol = 1e-12
-        same_return = abs(mu_A - mu_B) < tol
-        st.write(f"mu_A = {mu_A}, mu_B = {mu_B}, difference = {mu_A - mu_B}")
+        # Round and compare for visual debug
+        rounded_mu_A = round(mu_A, 6)
+        rounded_mu_B = round(mu_B, 6)
+        diff = abs(rounded_mu_A - rounded_mu_B)
+        same_return = diff < 1e-12
+
+        st.write(f"mu_A = {mu_A}, mu_B = {mu_B}")
+        st.write(f"Rounded: mu_A = {rounded_mu_A}, mu_B = {rounded_mu_B}, difference = {diff}")
         if same_return:
             st.success("✅ The two expected returns are considered identical.")
         else:
