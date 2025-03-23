@@ -32,12 +32,15 @@ portfolio_stds = np.sqrt(
 )
 
 # Compute Minimum Variance Portfolio (MVP)
-w_star = (sigma_B**2 - rho * sigma_A * sigma_B) / (sigma_A**2 + sigma_B**2 - 2 * rho * sigma_A * sigma_B)
-w_star = max(0, min(w_star, 1))  # Ensure no short sales
+denominator = sigma_A**2 + sigma_B**2 - 2 * rho * sigma_A * sigma_B
 
-# Special handling for perfect negative correlation
-if rho == -1:
-    w_star = sigma_B / (sigma_A + sigma_B)  # Correct formula for rho = -1
+# Handle division by zero
+if denominator == 0:
+    w_star = sigma_B / (sigma_A + sigma_B)  # Special handling for rho = -1
+else:
+    w_star = (sigma_B**2 - rho * sigma_A * sigma_B) / denominator
+
+w_star = max(0, min(w_star, 1))  # Ensure no short sales
 
 mvp_return = w_star * mu_A + (1 - w_star) * mu_B
 mvp_std = np.sqrt(
