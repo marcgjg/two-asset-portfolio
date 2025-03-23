@@ -36,7 +36,7 @@ try:
             ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
             ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
             ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
-            ax.scatter(portfolio_std, portfolio_return, marker='*', color='black', s=200)
+            ax.scatter(portfolio_std, portfolio_return, marker='*', color='black', s=100)
             ax.set_xlabel('Standard Deviation')
             ax.set_ylabel('Expected Return')
             ax.set_title('Minimum Variance Portfolio')
