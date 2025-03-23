@@ -82,4 +82,25 @@ try:
             fig, ax = plt.subplots(figsize=(3, 2))
             ax.scatter(sigma_A*100, mu_A*100, color='blue', label='Stock A')  # Convert back to percentage for plotting
             ax.scatter(sigma_B*100, mu_B*100, color='green', label='Stock B')
-            ax.plot(efficient_stds
+            ax.plot(efficient_stds*100, efficient_returns*100, color='red', label='Efficient Frontier')  # Convert back to percentage for plotting
+            ax.plot(inefficient_stds*100, inefficient_returns*100, color='red', linestyle='--', label='Inefficient Frontier')
+            ax.scatter(mvp_std*100, mvp_return*100, marker='*', color='black', s=200, label=f'MVP ({mvp_std*100:.2f}%, {mvp_return*100:.2f}%)')
+            ax.scatter(mvp_std*100, mvp_return*100, color='red')
+            
+            # Optionally include random portfolios
+            if st.checkbox('Include Random Portfolios'):
+                random_alphas = np.random.uniform(0, 1, size=100)
+                random_returns = random_alphas * mu_A + (1 - random_alphas) * mu_B
+                random_stds = np.sqrt(random_alphas**2 * sigma_A**2 + (1 - random_alphas)**2 * sigma_B**2 + 2 * random_alphas * (1 - random_alphas) * rho * sigma_A * sigma_B)
+                ax.scatter(random_stds*100, random_returns*100, color='gray', alpha=0.5)  # Convert back to percentage for plotting
+
+            ax.set_xlabel('Standard Deviation (%)')
+            ax.set_ylabel('Expected Return (%)')
+            ax.yaxis.set_major_formatter(PercentFormatter(xmax=100.0))  # Format y-axis as percentage
+            ax.xaxis.set_major_formatter(PercentFormatter(xmax=100.0))  # Format x-axis as percentage
+            ax.set_title('Efficient Frontier')
+            ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+            st.pyplot(fig)
+
+except Exception as e:
+    st.error(f"An error occurred: {str(e)}")
