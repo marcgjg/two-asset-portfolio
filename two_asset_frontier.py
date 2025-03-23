@@ -6,10 +6,21 @@ import matplotlib.pyplot as plt
 st.set_page_config(layout="wide")
 
 # Create columns for sliders and plot
-col1, col2 = st.columns([2, 6])  # Adjust column widths
+col1, col2 = st.columns([2, 6])
 
-# Place sliders in the first column
+# Apply CSS to center sliders vertically
 with col1:
+    st.markdown("""
+    <style>
+    .css-1d391kg {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100vh;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     # Define sliders for inputs
     mu_A = st.slider('Expected Return of Stock A (%)', min_value=0.0, max_value=50.0, value=7.90, step=0.1)
     mu_B = st.slider('Expected Return of Stock B (%)', min_value=0.0, max_value=50.0, value=8.20, step=0.1)
