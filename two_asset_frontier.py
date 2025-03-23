@@ -8,18 +8,10 @@ st.set_page_config(layout="wide")
 # Create columns for sliders and plot
 col1, col2 = st.columns([2, 6])
 
-# Apply CSS to center sliders vertically
+# Add padding to center sliders vertically
 with col1:
-    st.markdown("""
-    <style>
-    .css-1d391kg {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        height: 100vh;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    for _ in range(5):  # Adjust this number to move sliders up or down
+        st.text('')
 
     # Define sliders for inputs
     mu_A = st.slider('Expected Return of Stock A (%)', min_value=0.0, max_value=50.0, value=7.90, step=0.1)
@@ -87,4 +79,3 @@ else:
 # Display plot in the second column
 with col2:
     st.pyplot(fig)
- 
