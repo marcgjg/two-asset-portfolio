@@ -32,7 +32,7 @@ try:
         # Plot MVP
         col1, col2 = st.columns([3, 1])  # Create columns to manage width
         with col1:
-            fig, ax = plt.subplots(figsize=(3, 2))
+            fig, ax = plt.subplots(figsize=(2, 1))
             ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
             ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
             ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
