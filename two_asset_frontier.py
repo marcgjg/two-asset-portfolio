@@ -120,7 +120,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         prop={'size': 8}  # smaller font for the legend
     )
 
-    ax.set_title("Two-Stock Frontier (Single Efficient Portfolio for Same Returns)")
+    ax.set_title("Two-Stock Frontier")
     ax.set_xlabel("Standard Deviation")
     ax.set_ylabel("Expected Return")
     plt.tight_layout()
@@ -128,7 +128,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     st.pyplot(fig)
 
 def main():
-    st.title("Two-Stock Frontier (Single Efficient Portfolio for Same Returns)")
+    st.title("Two-Stock Frontier")
 
     col_sliders, col_chart = st.columns([2, 3])
 
