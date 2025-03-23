@@ -30,16 +30,18 @@ try:
         portfolio_std = np.sqrt(w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B)
 
         # Plot MVP
-        fig, ax = plt.subplots(figsize=(3, 2))
-        ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
-        ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
-        ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
-        ax.scatter(portfolio_std, portfolio_return, marker='*', color='black')
-        ax.set_xlabel('Standard Deviation')
-        ax.set_ylabel('Expected Return')
-        ax.set_title('Minimum Variance Portfolio')
-        ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
-        st.pyplot(fig)
+        col1, col2 = st.columns([3, 1])  # Create columns to manage width
+        with col1:
+            fig, ax = plt.subplots(figsize=(3, 2))
+            ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
+            ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
+            ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
+            ax.scatter(portfolio_std, portfolio_return, marker='*', color='black')
+            ax.set_xlabel('Standard Deviation')
+            ax.set_ylabel('Expected Return')
+            ax.set_title('Minimum Variance Portfolio')
+            ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+            st.pyplot(fig)
 
     else:
         # Generate parametric efficient frontier
