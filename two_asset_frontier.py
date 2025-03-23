@@ -11,14 +11,14 @@ try:
     with col1:
         mu_A = st.slider('Expected Return of Stock A', min_value=0.0, max_value=0.5, value=0.07, step=0.01)
     with col2:
-        sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=0.5, value=0.10, step=0.01)
+        mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=0.5, value=0.07, step=0.01)
     
     col3, col4 = st.columns(2)
     with col3:
-        mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=0.5, value=0.07, step=0.01)
+        sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=0.5, value=0.10, step=0.01)
     with col4:    
         sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=0.5, value=0.10, step=0.01)
-
+                
     rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.08, step=0.01)
 
     # Compute Minimum Variance Portfolio if returns are equal
