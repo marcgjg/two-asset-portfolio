@@ -17,9 +17,9 @@ try:
     with col3:
         mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=0.5, value=0.07, step=0.01)
     with col4:    
-        sigma_B = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=0.5, value=0.10, step=0.01)
+        sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=0.5, value=0.10, step=0.01)
 
-    col5 = st.columns(2)
+    col5 = st.columns(1)
     with col5:
         rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.08, step=0.01)
 
