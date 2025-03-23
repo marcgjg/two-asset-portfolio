@@ -2,72 +2,67 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Set layout to wide
 st.set_page_config(layout="wide")
 
-# Move sliders to sidebar for compact layout
-with st.sidebar:
-    st.header("Portfolio Parameters")
-    er_a = st.slider('Expected Return Stock A (%)', 0.0, 30.0, 12.0, 0.01)
-    sigma_a = st.slider('Standard Deviation Stock A (%)', 1.0, 50.0, 15.0, 0.01)
-    er_b = st.slider('Expected Return Stock B (%)', 0.0, 30.0, 8.0, 0.01)
-    sigma_b = st.slider('Standard Deviation Stock B (%)', 1.0, 50.0, 20.0, 0.01)
-    rho = st.slider('Correlation Coefficient (ρ)', -1.0, 1.0, 0.3, 0.01)
+# Define sliders for inputs
+col1, col2, col3 = st.columns(3)
+with col1:
+    mu_A = st.slider('Expected Return of Stock A', min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+with col2:
+    mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+with col3:
+    sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=1.0, value=0.1, step=0.01)
 
-# Convert to decimals
-er_a, er_b = er_a/100, er_b/100
-sigma_a, sigma_b = sigma_a/100, sigma_b/100
-cov = rho * sigma_a * sigma_b
+col4, col5 = st.columns(2)
+with col4:
+    sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=1.0, value=0.2, step=0.01)
+with col5:
+    rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.5, step=0.01)
 
-# Calculate MVP weights using general formula
-numerator = sigma_b**2 - rho*sigma_a*sigma_b
-denominator = sigma_a**2 + sigma_b**2 - 2*rho*sigma_a*sigma_b
-w_mvp = numerator / denominator if denominator != 0 else 0.5
+# Compute Minimum Variance Portfolio if returns are equal
+if mu_A == mu_B:
+    w_star = (sigma_B**2 - rho * sigma_A * sigma_B) / (sigma_A**2 + sigma_B**2 - 2 * rho * sigma_A * sigma_B)
+    portfolio_return = mu_A
+    portfolio_std = np.sqrt(w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B)
 
-# MVP coordinates
-mvp_return = w_mvp*er_a + (1-w_mvp)*er_b
-mvp_vol = np.sqrt(w_mvp**2 * sigma_a**2 + (1-w_mvp)**2 * sigma_b**2 + 2*w_mvp*(1-w_mvp)*cov)
+    # Plot MVP
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.scatter(portfolio_std, portfolio_return, color='red', label='Efficient Frontier')
+    ax.scatter(portfolio_std, portfolio_return, marker='*', color='black')
+    ax.set_xlabel('Standard Deviation')
+    ax.set_ylabel('Expected Return')
+    ax.set_title('Minimum Variance Portfolio')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+    st.pyplot(fig)
 
-fig, ax = plt.subplots(figsize=(10, 5))
-
-if np.isclose(er_a, er_b):
-    # Equal returns case
-    ax.scatter(mvp_vol*100, mvp_return*100, color='red', s=100, label='MVP (Efficient Frontier)')
-    ax.scatter(mvp_vol*100, mvp_return*100, marker='*', s=400, edgecolor='black', facecolor='none')
 else:
-    # Different returns case
-    weights = np.linspace(-0.5, 1.5, 1000)
-    returns = weights*er_a + (1-weights)*er_b
-    volatilities = np.sqrt(weights**2 * sigma_a**2 + (1-weights)**2 * sigma_b**2 + 2*weights*(1-weights)*cov)
-    
-    # Split curve at MVP
-    idx_mvp = np.argmin(volatilities)
-    efficient_mask = weights >= w_mvp if er_a > er_b else weights <= w_mvp
-    
-    ax.plot(volatilities[efficient_mask]*100, returns[efficient_mask]*100, 'r-', label='Efficient Frontier')
-    ax.plot(volatilities[~efficient_mask]*100, returns[~efficient_mask]*100, 'r--', label='Inefficient Frontier')
-    ax.scatter(mvp_vol*100, mvp_return*100, color='red', s=100, label='MVP')
-    ax.scatter(mvp_vol*100, mvp_return*100, marker='*', s=400, edgecolor='black', facecolor='none')
-    
-    # Add random portfolios
-    if st.sidebar.checkbox('Show Random Portfolios'):
-        random_weights = np.random.uniform(-0.5, 1.5, 1000)
-        random_returns = random_weights*er_a + (1-random_weights)*er_b
-        random_vols = np.sqrt(random_weights**2 * sigma_a**2 + (1-random_weights)**2 * sigma_b**2 + 2*random_weights*(1-random_weights)*cov)
-        ax.scatter(random_vols*100, random_returns*100, color='gray', alpha=0.3, s=10)
+    # Generate parametric efficient frontier
+    alphas = np.linspace(0, 1, 100)
+    portfolio_returns = alphas * mu_A + (1 - alphas) * mu_B
+    portfolio_stds = np.sqrt(alphas**2 * sigma_A**2 + (1 - alphas)**2 * sigma_B**2 + 2 * alphas * (1 - alphas) * rho * sigma_A * sigma_B)
 
-# Plot individual stocks
-ax.scatter(sigma_a*100, er_a*100, color='blue', s=100, label='Stock A', marker='o')
-ax.scatter(sigma_b*100, er_b*100, color='green', s=100, label='Stock B', marker='s')
+    # Split into efficient and inefficient parts
+    max_return_idx = np.argmax(portfolio_returns)
+    efficient_returns = portfolio_returns[:max_return_idx+1]
+    efficient_stds = portfolio_stds[:max_return_idx+1]
+    inefficient_returns = portfolio_returns[max_return_idx:]
+    inefficient_stds = portfolio_stds[max_return_idx:]
 
-# Formatting
-ax.set_xlabel('Volatility (%)', fontweight='bold')
-ax.set_ylabel('Return (%)', fontweight='bold')
-ax.set_title(f"Efficient Frontier | MVP at ({mvp_vol*100:.1f}%, {mvp_return*100:.1f}%)\n"
-             f"Stock A: ({sigma_a*100:.1f}%, {er_a*100:.1f}%) | "
-             f"Stock B: ({sigma_b*100:.1f}%, {er_b*100:.1f}%)", 
-             pad=20, fontsize=12)
-ax.grid(True, alpha=0.3)
-ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # Plot efficient frontier
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.plot(efficient_stds, efficient_returns, color='red', label='Efficient Frontier')
+    ax.plot(inefficient_stds, inefficient_returns, color='red', linestyle='--', label='Inefficient Frontier')
 
-# Display plot without scrolling
-st.pyplot(fig)
+    # Optionally include random portfolios
+    if st.checkbox('Include Random Portfolios'):
+        random_alphas = np.random.uniform(0, 1, size=100)
+        random_returns = random_alphas * mu_A + (1 - random_alphas) * mu_B
+        random_stds = np.sqrt(random_alphas**2 * sigma_A**2 + (1 - random_alphas)**2 * sigma_B**2 + 2 * random_alphas * (1 - random_alphas) * rho * sigma_A * sigma_B)
+        ax.scatter(random_stds, random_returns, color='gray', alpha=0.5)
+
+    ax.set_xlabel('Standard Deviation')
+    ax.set_ylabel('Expected Return')
+    ax.set_title('Efficient Frontier')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+    st.pyplot(fig)
