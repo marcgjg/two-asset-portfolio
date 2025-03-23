@@ -32,7 +32,7 @@ try:
         # Plot MVP
         col1, col2 = st.columns([3, 1])  # Create columns to manage width
         with col1:
-            fig, ax = plt.subplots(figsize=(3, 2))
+            fig, ax = plt.subplots(figsize=(6, 4))
             ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
             ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
             ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
@@ -42,6 +42,7 @@ try:
             ax.set_title('Minimum Variance Portfolio')
             ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
             st.pyplot(fig)
+
 
     else:
         # Generate parametric efficient frontier
