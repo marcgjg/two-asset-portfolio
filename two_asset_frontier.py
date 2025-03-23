@@ -30,7 +30,7 @@ try:
         portfolio_std = np.sqrt(w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B)
 
         # Plot MVP
-        fig, ax = plt.subplots(figsize=(4, 3))
+        fig, ax = plt.subplots(figsize=(3, 2))
         ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
         ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
         ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
