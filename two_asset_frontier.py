@@ -8,17 +8,17 @@ st.set_page_config(layout="wide")
 # Define sliders for inputs
 col1, col2, col3 = st.columns(3)
 with col1:
-    mu_A = st.slider('Expected Return of Stock A', min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+    mu_A = st.slider('Expected Return of Stock A', min_value=0.0, max_value=1.0, value=0.05, step=0.01, height=50)
 with col2:
-    mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+    mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=1.0, value=0.05, step=0.01, height=50)
 with col3:
-    sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+    sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=1.0, value=0.1, step=0.01, height=50)
 
 col4, col5 = st.columns(2)
 with col4:
-    sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=1.0, value=0.2, step=0.01)
+    sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=1.0, value=0.2, step=0.01, height=50)
 with col5:
-    rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.5, step=0.01)
+    rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.5, step=0.01, height=50)
 
 # Compute Minimum Variance Portfolio if returns are equal
 if mu_A == mu_B:
@@ -68,7 +68,7 @@ else:
     ax.scatter(mvp_std, mvp_return, color='red', label=f'MVP ({mvp_std:.2f}, {mvp_return:.2f})')
 
     # Optionally include random portfolios
-    if st.checkbox('Include Random Portfolios'):
+    if st.checkbox('Include Random Portfolios', key='random_portfolios'):
         random_alphas = np.random.uniform(0, 1, size=100)
         random_returns = random_alphas * mu_A + (1 - random_alphas) * mu_B
         random_stds = np.sqrt(random_alphas**2 * sigma_A**2 + (1 - random_alphas)**2 * sigma_B**2 + 2 * random_alphas * (1 - random_alphas) * rho * sigma_A * sigma_B)
