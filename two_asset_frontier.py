@@ -48,7 +48,7 @@ mvp_std = np.sqrt(
 # Special case handling: If returns are equal, MVP is the only efficient portfolio
 if mu_A == mu_B:
     # Plot MVP as a single point
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=150)  # Increased DPI for clarity
+    fig, ax = plt.subplots(figsize=(3, 2), dpi=300)  # Increased DPI for clarity
     ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
     ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
     ax.scatter(mvp_std * 100, mvp_return * 100,
@@ -67,7 +67,7 @@ else:
     inefficient_stds = portfolio_stds[~efficient_mask]
 
     # Plotting
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=150)  # Increased DPI for clarity
+    fig, ax = plt.subplots(figsize=(3, 2), dpi=300)  # Increased DPI for clarity
     ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
     ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
     ax.scatter(mvp_std * 100, mvp_return * 100,
