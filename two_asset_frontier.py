@@ -106,7 +106,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
         prop={'size': 8}
     )
 
-    ax.set_title("Two-Stock Frontier (Single Efficient Portfolio if Returns Match)")
+    ax.set_title("Two-Stock Frontier")
     ax.set_xlabel("Standard Deviation")
     ax.set_ylabel("Expected Return")
     plt.tight_layout()
