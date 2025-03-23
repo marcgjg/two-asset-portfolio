@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 
 try:
     # Set layout to wide
@@ -38,7 +39,8 @@ try:
             ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
             ax.scatter(portfolio_std, portfolio_return, marker='*', color='black', s=200)
             ax.set_xlabel('Standard Deviation')
-            ax.set_ylabel('Expected Return')
+            ax.set_ylabel('Expected Return (%)')
+            ax.yaxis.set_major_formatter(PercentFormatter(xmax=1.0))  # Format y-axis as percentage
             ax.set_title('Minimum Variance Portfolio')
             ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
             st.pyplot(fig)
@@ -86,7 +88,8 @@ try:
                 ax.scatter(random_stds, random_returns, color='gray', alpha=0.5)
 
             ax.set_xlabel('Standard Deviation')
-            ax.set_ylabel('Expected Return')
+            ax.set_ylabel('Expected Return (%)')
+            ax.yaxis.set_major_formatter(PercentFormatter(xmax=1.0))  # Format y-axis as percentage
             ax.set_title('Efficient Frontier')
             ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
             st.pyplot(fig)
