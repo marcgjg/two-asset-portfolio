@@ -26,7 +26,7 @@ def plot_two_stock_frontier(mu_A, mu_B, sigma_A, sigma_B, corr_AB):
     mvp_y = frontier_returns[idx_min]
 
     # 3) Same-return check
-    tol = 1e-12
+    tol = 1e-6
     same_return = abs(mu_A - mu_B) < tol
 
     fig, ax = plt.subplots(figsize=(8, 4))
