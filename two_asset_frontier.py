@@ -81,10 +81,14 @@ else:
     ax.scatter(mvp_std * 100, mvp_return * 100, marker='*', color='black', s=200, label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
     ax.plot(efficient_stds * 100, efficient_returns * 100, color='red', label='Efficient Frontier')
     ax.plot(inefficient_stds * 100, inefficient_returns * 100, color='red', linestyle='--', label='Inefficient Frontier')
+    
+    # Set x-axis limits with default value for empty lists
+    max_efficient_std = max(efficient_stds, default=0)
+    max_inefficient_std = max(inefficient_stds, default=0)
     ax.set_xlabel('Standard Deviation (%)')
     ax.set_ylabel('Expected Return (%)')
-    ax.set_xlim(0, max(max(efficient_stds), max(inefficient_stds)) * 100 + 1)  # Set x-axis limits
-    ax.set_ylim(min(min(efficient_returns), min(inefficient_returns)) * 100 - 1, max(max(efficient_returns), max(inefficient_returns)) * 100 + 1)  # Set y-axis limits
+    ax.set_xlim(0, max(max_efficient_std, max_inefficient_std) * 100 + 1)  # Set x-axis limits
+    ax.set_ylim(min(min(efficient_returns), min(inefficient_returns, default=mu_A)) * 100 - 1, max(max(efficient_returns), max(inefficient_returns, default=mu_B)) * 100 + 1)  # Set y-axis limits
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
     ax.set_title('Efficient Frontier with MVP')
 
