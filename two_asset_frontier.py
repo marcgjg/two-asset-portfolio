@@ -90,7 +90,7 @@ else:
     ax.set_xlim(0, max(max_efficient_std, max_inefficient_std) * 100 + 1)  # Set x-axis limits
     ax.set_ylim(min(min(efficient_returns), min(inefficient_returns, default=mu_A)) * 100 - 1, max(max(efficient_returns), max(inefficient_returns, default=mu_B)) * 100 + 1)  # Set y-axis limits
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
-    ax.set_title('Efficient Frontier with MVP')
+    ax.set_title('Efficient Frontier with Minimum-Variance Portfolio (MVP)')
 
 # Display plot in the second column
 with col2:
