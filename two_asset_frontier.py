@@ -58,6 +58,8 @@ if mu_A == mu_B:
     ax.scatter(mvp_std * 100, mvp_return * 100, marker='*', color='black', s=200, label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
     ax.set_xlabel('Standard Deviation (%)')
     ax.set_ylabel('Expected Return (%)')
+    ax.set_xlim(0, max(sigma_A, sigma_B) * 100 + 1)  # Set x-axis limits
+    ax.set_ylim(min(mu_A, mu_B) * 100 - 1, max(mu_A, mu_B) * 100 + 1)  # Set y-axis limits
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
     ax.set_title('Minimum Variance Portfolio')
 else:
@@ -77,6 +79,8 @@ else:
     ax.plot(inefficient_stds * 100, inefficient_returns * 100, color='red', linestyle='--', label='Inefficient Frontier')
     ax.set_xlabel('Standard Deviation (%)')
     ax.set_ylabel('Expected Return (%)')
+    ax.set_xlim(0, max(max(efficient_stds), max(inefficient_stds)) * 100 + 1)  # Set x-axis limits
+    ax.set_ylim(min(min(efficient_returns), min(inefficient_returns)) * 100 - 1, max(max(efficient_returns), max(inefficient_returns)) * 100 + 1)  # Set y-axis limits
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
     ax.set_title('Efficient Frontier with MVP')
 
