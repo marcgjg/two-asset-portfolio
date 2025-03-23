@@ -23,11 +23,15 @@ with col5:
 # Compute Minimum Variance Portfolio if returns are equal
 if mu_A == mu_B:
     w_star = (sigma_B**2 - rho * sigma_A * sigma_B) / (sigma_A**2 + sigma_B**2 - 2 * rho * sigma_A * sigma_B)
+    # Ensure no short sales
+    w_star = max(0, min(w_star, 1))
     portfolio_return = mu_A
     portfolio_std = np.sqrt(w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B)
 
     # Plot MVP
     fig, ax = plt.subplots(figsize=(8, 6))
+    ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
+    ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
     ax.scatter(portfolio_std, portfolio_return, color='red', label='Efficient Frontier')
     ax.scatter(portfolio_std, portfolio_return, marker='*', color='black')
     ax.set_xlabel('Standard Deviation')
@@ -42,17 +46,26 @@ else:
     portfolio_returns = alphas * mu_A + (1 - alphas) * mu_B
     portfolio_stds = np.sqrt(alphas**2 * sigma_A**2 + (1 - alphas)**2 * sigma_B**2 + 2 * alphas * (1 - alphas) * rho * sigma_A * sigma_B)
 
+    # Find MVP within the efficient frontier
+    mvp_idx = np.argmin(portfolio_stds)
+    mvp_return = portfolio_returns[mvp_idx]
+    mvp_std = portfolio_stds[mvp_idx]
+
     # Split into efficient and inefficient parts
     max_return_idx = np.argmax(portfolio_returns)
-    efficient_returns = portfolio_returns[:max_return_idx+1]
-    efficient_stds = portfolio_stds[:max_return_idx+1]
-    inefficient_returns = portfolio_returns[max_return_idx:]
-    inefficient_stds = portfolio_stds[max_return_idx:]
+    efficient_returns = portfolio_returns[mvp_idx:max_return_idx+1]
+    efficient_stds = portfolio_stds[mvp_idx:max_return_idx+1]
+    inefficient_returns = portfolio_returns[:mvp_idx]
+    inefficient_stds = portfolio_stds[:mvp_idx]
 
     # Plot efficient frontier
     fig, ax = plt.subplots(figsize=(8, 6))
+    ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
+    ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
     ax.plot(efficient_stds, efficient_returns, color='red', label='Efficient Frontier')
     ax.plot(inefficient_stds, inefficient_returns, color='red', linestyle='--', label='Inefficient Frontier')
+    ax.scatter(mvp_std, mvp_return, marker='*', color='black')
+    ax.scatter(mvp_std, mvp_return, color='red')
 
     # Optionally include random portfolios
     if st.checkbox('Include Random Portfolios'):
