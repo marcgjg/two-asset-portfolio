@@ -5,20 +5,17 @@ import matplotlib.pyplot as plt
 # Set layout to wide
 st.set_page_config(layout="wide")
 
-# Define sliders for inputs
-col1, col2 = st.columns(2)
+# Create columns for sliders and plot
+col1, col2 = st.columns([2, 6])  # Adjust column widths
+
+# Place sliders in the first column
 with col1:
+    # Define sliders for inputs
     mu_A = st.slider('Expected Return of Stock A (%)', min_value=0.0, max_value=50.0, value=7.90, step=0.1)
-with col2:
     mu_B = st.slider('Expected Return of Stock B (%)', min_value=0.0, max_value=50.0, value=8.20, step=0.1)
-
-col3, col4 = st.columns(2)
-with col3:
     sigma_A = st.slider('Standard Deviation of Stock A (%)', min_value=0.0, max_value=50.0, value=10.00, step=0.1)
-with col4:
     sigma_B = st.slider('Standard Deviation of Stock B (%)', min_value=0.0, max_value=50.0, value=13.90, step=0.1)
-
-rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.74, step=0.01)
+    rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.74, step=0.01)
 
 # Convert sliders back to decimal form for calculations
 mu_A /= 100
@@ -48,12 +45,10 @@ mvp_std = np.sqrt(
 # Special case handling: If returns are equal, MVP is the only efficient portfolio
 if mu_A == mu_B:
     # Plot MVP as a single point
-    fig, ax = plt.subplots(figsize=(3, 2), dpi=300)  # Increased DPI for clarity
-    ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
-    ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
-    ax.scatter(mvp_std * 100, mvp_return * 100,
-               marker='*', color='black', s=200,
-               label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
+    fig, ax = plt.subplots(figsize=(6, 4), dpi=150)
+    ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A')
+    ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B')
+    ax.scatter(mvp_std * 100, mvp_return * 100, marker='*', color='black', s=200, label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
     ax.set_xlabel('Standard Deviation (%)')
     ax.set_ylabel('Expected Return (%)')
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
@@ -67,21 +62,17 @@ else:
     inefficient_stds = portfolio_stds[~efficient_mask]
 
     # Plotting
-    fig, ax = plt.subplots(figsize=(3, 2), dpi=300)  # Increased DPI for clarity
-    ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
-    ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
-    ax.scatter(mvp_std * 100, mvp_return * 100,
-               marker='*', color='black', s=200,
-               label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
-    ax.plot(efficient_stds * 100, efficient_returns * 100,
-            color='red', label='Efficient Frontier')
-    ax.plot(inefficient_stds * 100, inefficient_returns * 100,
-            color='red', linestyle='--', label='Inefficient Frontier')
+    fig, ax = plt.subplots(figsize=(6, 4), dpi=150)
+    ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A')
+    ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B')
+    ax.scatter(mvp_std * 100, mvp_return * 100, marker='*', color='black', s=200, label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
+    ax.plot(efficient_stds * 100, efficient_returns * 100, color='red', label='Efficient Frontier')
+    ax.plot(inefficient_stds * 100, inefficient_returns * 100, color='red', linestyle='--', label='Inefficient Frontier')
     ax.set_xlabel('Standard Deviation (%)')
     ax.set_ylabel('Expected Return (%)')
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
     ax.set_title('Efficient Frontier with MVP')
 
-# Display plot in Streamlit app
-st.pyplot(fig)
-
+# Display plot in the second column
+with col2:
+    st.pyplot(fig)
