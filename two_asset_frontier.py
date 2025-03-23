@@ -43,11 +43,15 @@ else:
 w_star = max(0, min(w_star, 1))  # Ensure no short sales
 
 mvp_return = w_star * mu_A + (1 - w_star) * mu_B
-mvp_std = np.sqrt(
-    w_star**2 * sigma_A**2 +
-    (1 - w_star)**2 * sigma_B**2 +
-    2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B
-)
+
+# Correctly calculate MVP standard deviation
+mvp_variance = w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B
+
+# Check if variance is non-negative before calculating standard deviation
+if mvp_variance >= 0:
+    mvp_std = np.sqrt(mvp_variance)
+else:
+    mvp_std = 0  # Set to 0 if variance is negative (theoretical minimum variance portfolio)
 
 # Special case handling: If returns are equal, MVP is the only efficient portfolio
 if mu_A == mu_B:
