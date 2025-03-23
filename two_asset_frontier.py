@@ -45,38 +45,42 @@ mvp_std = np.sqrt(
     2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B
 )
 
-# Split into efficient and inefficient frontiers
-efficient_mask = portfolio_returns >= mvp_return  # Keep only points above or equal to MVP's return
-efficient_returns = portfolio_returns[efficient_mask]
-efficient_stds = portfolio_stds[efficient_mask]
-inefficient_returns = portfolio_returns[~efficient_mask]
-inefficient_stds = portfolio_stds[~efficient_mask]
+# Special case handling: If returns are equal, MVP is the only efficient portfolio
+if mu_A == mu_B:
+    # Plot MVP as a single point
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
+    ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
+    ax.scatter(mvp_std * 100, mvp_return * 100,
+               marker='*', color='black', s=200,
+               label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
+    ax.set_xlabel('Standard Deviation (%)')
+    ax.set_ylabel('Expected Return (%)')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+    ax.set_title('Minimum Variance Portfolio')
+else:
+    # Split into efficient and inefficient frontiers
+    efficient_mask = portfolio_returns >= mvp_return  # Keep only points above or equal to MVP's return
+    efficient_returns = portfolio_returns[efficient_mask]
+    efficient_stds = portfolio_stds[efficient_mask]
+    inefficient_returns = portfolio_returns[~efficient_mask]
+    inefficient_stds = portfolio_stds[~efficient_mask]
 
-# Plotting
-fig, ax = plt.subplots(figsize=(6, 4))
-
-# Plot Stock A and Stock B
-ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
-ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
-
-# Plot MVP with only a black star
-ax.scatter(mvp_std * 100, mvp_return * 100,
-           marker='*', color='black', s=200,
-           label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
-
-# Plot efficient frontier (solid red line)
-ax.plot(efficient_stds * 100, efficient_returns * 100,
-        color='red', label='Efficient Frontier')
-
-# Plot inefficient frontier (dashed red line)
-ax.plot(inefficient_stds * 100, inefficient_returns * 100,
-        color='red', linestyle='--', label='Inefficient Frontier')
-
-# Labels and legend
-ax.set_xlabel('Standard Deviation (%)')
-ax.set_ylabel('Expected Return (%)')
-ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
-ax.set_title('Efficient Frontier with MVP')
+    # Plotting
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
+    ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
+    ax.scatter(mvp_std * 100, mvp_return * 100,
+               marker='*', color='black', s=200,
+               label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
+    ax.plot(efficient_stds * 100, efficient_returns * 100,
+            color='red', label='Efficient Frontier')
+    ax.plot(inefficient_stds * 100, inefficient_returns * 100,
+            color='red', linestyle='--', label='Inefficient Frontier')
+    ax.set_xlabel('Standard Deviation (%)')
+    ax.set_ylabel('Expected Return (%)')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+    ax.set_title('Efficient Frontier with MVP')
 
 # Display plot in Streamlit app
 st.pyplot(fig)
