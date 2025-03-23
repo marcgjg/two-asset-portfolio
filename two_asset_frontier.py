@@ -9,17 +9,17 @@ try:
     # Define sliders for inputs
     col1, col2, col3 = st.columns(3)
     with col1:
-        mu_A = st.slider('Expected Return of Stock A', min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+        mu_A = st.slider('Expected Return of Stock A', min_value=0.0, max_value=1.0, value=0.07, step=0.01)
     with col2:
-        mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+        mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=1.0, value=0.18, step=0.01)
     with col3:
-        sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=1.0, value=0.10, step=0.01)
 
     col4, col5 = st.columns(2)
     with col4:
-        sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=1.0, value=0.2, step=0.01)
+        sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=1.0, value=0.30, step=0.01)
     with col5:
-        rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.5, step=0.01)
+        rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.08, step=0.01)
 
     # Compute Minimum Variance Portfolio if returns are equal
     if mu_A == mu_B:
@@ -30,7 +30,7 @@ try:
         portfolio_std = np.sqrt(w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B)
 
         # Plot MVP
-        fig, ax = plt.subplots(figsize=(5, 3))
+        fig, ax = plt.subplots(figsize=(6, 4))
         ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
         ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
         ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
@@ -54,10 +54,16 @@ try:
 
         # Split into efficient and inefficient parts
         max_return_idx = np.argmax(portfolio_returns)
-        efficient_returns = portfolio_returns[mvp_idx:max_return_idx+1]
-        efficient_stds = portfolio_stds[mvp_idx:max_return_idx+1]
-        inefficient_returns = portfolio_returns[:mvp_idx]
-        inefficient_stds = portfolio_stds[:mvp_idx]
+        if mvp_idx < max_return_idx:
+            efficient_returns = portfolio_returns[mvp_idx:max_return_idx+1]
+            efficient_stds = portfolio_stds[mvp_idx:max_return_idx+1]
+            inefficient_returns = portfolio_returns[:mvp_idx]
+            inefficient_stds = portfolio_stds[:mvp_idx]
+        else:
+            efficient_returns = portfolio_returns[max_return_idx:mvp_idx+1]
+            efficient_stds = portfolio_stds[max_return_idx:mvp_idx+1]
+            inefficient_returns = portfolio_returns[mvp_idx+1:]
+            inefficient_stds = portfolio_stds[mvp_idx+1:]
 
         # Plot efficient frontier
         fig, ax = plt.subplots(figsize=(6, 4))
