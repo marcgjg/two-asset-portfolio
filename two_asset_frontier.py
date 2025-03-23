@@ -7,19 +7,19 @@ try:
     st.set_page_config(layout="wide")
 
     # Define sliders for inputs
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
-        mu_A = st.slider('Expected Return of Stock A', min_value=0.0, max_value=0.5, value=0.07, step=0.01)
+        mu_A = st.slider('Expected Return of Stock A', min_value=0.0, max_value=1.0, value=0.07, step=0.01)
     with col2:
-        mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=0.5, value=0.07, step=0.01)
-    
-    col3, col4 = st.columns(2)
+        mu_B = st.slider('Expected Return of Stock B', min_value=0.0, max_value=1.0, value=0.18, step=0.01)
     with col3:
-        sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=0.5, value=0.10, step=0.01)
-    with col4:    
-        sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=0.5, value=0.10, step=0.01)
-                
-    rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.08, step=0.01)
+        sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=1.0, value=0.10, step=0.01)
+
+    col4, col5 = st.columns(2)
+    with col4:
+        sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=1.0, value=0.30, step=0.01)
+    with col5:
+        rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.08, step=0.01)
 
     # Compute Minimum Variance Portfolio if returns are equal
     if mu_A == mu_B:
@@ -30,19 +30,16 @@ try:
         portfolio_std = np.sqrt(w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B)
 
         # Plot MVP
-        col1, col2 = st.columns([3, 1])  # Create columns to manage width
-        with col1:
-            fig, ax = plt.subplots(figsize=(2, 1))
-            ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
-            ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
-            ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
-            ax.scatter(portfolio_std, portfolio_return, marker='*', color='black')
-            ax.set_xlabel('Standard Deviation')
-            ax.set_ylabel('Expected Return')
-            ax.set_title('Minimum Variance Portfolio')
-            ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
-            st.pyplot(fig)
-
+        fig, ax = plt.subplots(figsize=(4, 3))
+        ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
+        ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
+        ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
+        ax.scatter(portfolio_std, portfolio_return, marker='*', color='black', s=200)
+        ax.set_xlabel('Standard Deviation')
+        ax.set_ylabel('Expected Return')
+        ax.set_title('Minimum Variance Portfolio')
+        ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+        st.pyplot(fig)
 
     else:
         # Generate parametric efficient frontier
@@ -69,14 +66,14 @@ try:
             inefficient_stds = portfolio_stds[mvp_idx+1:]
 
         # Plot efficient frontier
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(4, 3))
         ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
         ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
         ax.plot(efficient_stds, efficient_returns, color='red', label='Efficient Frontier')
-        ax.plot(inefficient_stds, inefficient_returns, color='red', linestyle='--', label='Inefficient Portfolios')
-        ax.scatter(mvp_std, mvp_return, marker='*', color='black')
-        ax.scatter(mvp_std, mvp_return, color='red', label=f'MVP ({mvp_std:.2f}, {mvp_return:.2f})')
-
+        ax.plot(inefficient_stds, inefficient_returns, color='red', linestyle='--', label='Inefficient Frontier')
+        ax.scatter(mvp_std, mvp_return, marker='*', color='black', s=200, label=f'MVP ({mvp_std:.2f}, {mvp_return:.2f})')
+        ax.scatter(mvp_std, mvp_return, color='red')
+        
         # Optionally include random portfolios
         if st.checkbox('Include Random Portfolios'):
             random_alphas = np.random.uniform(0, 1, size=100)
