@@ -1,6 +1,6 @@
-import streamlit as st
 import plotly.express as px
 import numpy as np
+import streamlit as st
 
 # Set layout to wide
 st.set_page_config(layout="wide")
@@ -51,7 +51,12 @@ if mu_A == mu_B:
     fig = px.scatter(x=[sigma_A * 100], y=[mu_A * 100], text=['Stock A'])
     fig.add_scatter(x=[sigma_B * 100], y=[mu_B * 100], text=['Stock B'])
     fig.add_scatter(x=[mvp_std * 100], y=[mvp_return * 100], text=['MVP'], mode='markers', marker=dict(size=20))
-    fig.update_layout(title='Minimum Variance Portfolio', xaxis_title='Standard Deviation (%)', yaxis_title='Expected Return (%)')
+    fig.update_layout(
+        title='Minimum Variance Portfolio',
+        xaxis_title='Standard Deviation (%)',
+        yaxis_title='Expected Return (%)',
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)  # Adjust legend position
+    )
 else:
     # Split into efficient and inefficient frontiers
     efficient_mask = portfolio_returns >= mvp_return  # Keep only points above or equal to MVP's return
@@ -66,7 +71,12 @@ else:
     fig.add_scatter(x=[mvp_std * 100], y=[mvp_return * 100], text=['MVP'], mode='markers', marker=dict(size=20))
     fig.add_scatter(x=efficient_stds * 100, y=efficient_returns * 100, mode='lines', line=dict(color='red'), name='Efficient Frontier')
     fig.add_scatter(x=inefficient_stds * 100, y=inefficient_returns * 100, mode='lines', line=dict(color='red', dash='dash'), name='Inefficient Frontier')
-    fig.update_layout(title='Efficient Frontier with MVP', xaxis_title='Standard Deviation (%)', yaxis_title='Expected Return (%)')
+    fig.update_layout(
+        title='Efficient Frontier with MVP',
+        xaxis_title='Standard Deviation (%)',
+        yaxis_title='Expected Return (%)',
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)  # Adjust legend position
+    )
 
 # Display plot in Streamlit app
 st.plotly_chart(fig, use_container_width=True)
