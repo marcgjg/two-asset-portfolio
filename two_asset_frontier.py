@@ -87,3 +87,4 @@ else:
 # Display plot in the second column
 with col2:
     st.pyplot(fig)
+ 
