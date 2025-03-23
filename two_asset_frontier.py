@@ -16,7 +16,7 @@ try:
     col3, col4 = st.columns(2)
     with col3:
         sigma_A = st.slider('Standard Deviation of Stock A', min_value=0.0, max_value=1.0, value=0.10, step=0.01)
-    with col5:
+    with col4:
         sigma_B = st.slider('Standard Deviation of Stock B', min_value=0.0, max_value=1.0, value=0.30, step=0.01)
     
     rho = st.slider('Correlation Coefficient', min_value=-1.0, max_value=1.0, value=0.08, step=0.01)
@@ -30,7 +30,7 @@ try:
         portfolio_std = np.sqrt(w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B)
 
         # Plot MVP
-        fig, ax = plt.subplots(figsize=(4, 3))
+        fig, ax = plt.subplots(figsize=(3, 2))
         ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
         ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
         ax.scatter(portfolio_std, portfolio_return, color='red', label=f'MVP ({portfolio_std:.2f}, {portfolio_return:.2f})')
@@ -66,7 +66,7 @@ try:
             inefficient_stds = portfolio_stds[mvp_idx+1:]
 
         # Plot efficient frontier
-        fig, ax = plt.subplots(figsize=(4, 3))
+        fig, ax = plt.subplots(figsize=(3, 2))
         ax.scatter(sigma_A, mu_A, color='blue', label='Stock A')
         ax.scatter(sigma_B, mu_B, color='green', label='Stock B')
         ax.plot(efficient_stds, efficient_returns, color='red', label='Efficient Frontier')
