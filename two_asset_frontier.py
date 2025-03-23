@@ -4,63 +4,63 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
-# Create input columns
-col1, col2 = st.columns(2)
-with col1:
-    er_a = st.slider('Expected Return Stock A (%)', 0.0, 30.0, 10.0, 0.01)
+# Move sliders to sidebar for compact layout
+with st.sidebar:
+    st.header("Portfolio Parameters")
+    er_a = st.slider('Expected Return Stock A (%)', 0.0, 30.0, 12.0, 0.01)
     sigma_a = st.slider('Standard Deviation Stock A (%)', 1.0, 50.0, 15.0, 0.01)
-with col2:
-    er_b = st.slider('Expected Return Stock B (%)', 0.0, 30.0, 10.0, 0.01)
+    er_b = st.slider('Expected Return Stock B (%)', 0.0, 30.0, 8.0, 0.01)
     sigma_b = st.slider('Standard Deviation Stock B (%)', 1.0, 50.0, 20.0, 0.01)
-rho = st.slider('Correlation Coefficient (ρ)', -1.0, 1.0, 0.5, 0.01)
+    rho = st.slider('Correlation Coefficient (ρ)', -1.0, 1.0, 0.3, 0.01)
 
-# Convert percentages to decimals
-er_a /= 100
-er_b /= 100
-sigma_a /= 100
-sigma_b /= 100
-
-# Calculate covariance
+# Convert to decimals
+er_a, er_b = er_a/100, er_b/100
+sigma_a, sigma_b = sigma_a/100, sigma_b/100
 cov = rho * sigma_a * sigma_b
 
-fig, ax = plt.subplots(figsize=(10, 6))
+# Calculate MVP weights using general formula
+numerator = sigma_b**2 - rho*sigma_a*sigma_b
+denominator = sigma_a**2 + sigma_b**2 - 2*rho*sigma_a*sigma_b
+w_mvp = numerator / denominator if denominator != 0 else 0.5
+
+# MVP coordinates
+mvp_return = w_mvp*er_a + (1-w_mvp)*er_b
+mvp_vol = np.sqrt(w_mvp**2 * sigma_a**2 + (1-w_mvp)**2 * sigma_b**2 + 2*w_mvp*(1-w_mvp)*cov)
+
+fig, ax = plt.subplots(figsize=(10, 5))
 
 if np.isclose(er_a, er_b):
-    # Case 1: Same expected returns
-    numerator = sigma_b**2 - rho*sigma_a*sigma_b
-    denominator = sigma_a**2 + sigma_b**2 - 2*rho*sigma_a*sigma_b
-    w_a = numerator / denominator
-    w_b = 1 - w_a
-    
-    port_return = er_a  # Since er_a = er_b
-    port_vol = np.sqrt(w_a**2 * sigma_a**2 + w_b**2 * sigma_b**2 + 2*w_a*w_b*cov)
-    
-    ax.scatter(port_vol*100, port_return*100, color='red', s=100, label='MVP')
-    ax.scatter(port_vol*100, port_return*100, marker='*', s=400, edgecolor='black', facecolor='none')
-    
+    # Equal returns case
+    ax.scatter(mvp_vol*100, mvp_return*100, color='red', s=100, label='MVP (Efficient Frontier)')
+    ax.scatter(mvp_vol*100, mvp_return*100, marker='*', s=400, edgecolor='black', facecolor='none')
 else:
-    # Case 2: Different expected returns
-    weights = np.linspace(-0.5, 1.5, 100)
+    # Different returns case
+    weights = np.linspace(-0.5, 1.5, 1000)
     returns = weights*er_a + (1-weights)*er_b
     volatilities = np.sqrt(weights**2 * sigma_a**2 + (1-weights)**2 * sigma_b**2 + 2*weights*(1-weights)*cov)
     
-    # Split into efficient and inefficient frontiers
-    efficient_mask = returns >= min(er_a, er_b)
-    ax.plot(volatilities[efficient_mask]*100, returns[efficient_mask]*100, 'r-', label='Efficient Frontier')
-    ax.plot(volatilities[~efficient_mask]*100, returns[~efficient_mask]*100, 'r--', label='Inefficient')
+    # Split curve at MVP
+    idx_mvp = np.argmin(volatilities)
+    efficient_mask = weights >= w_mvp if er_a > er_b else weights <= w_mvp
     
-    # Optional random portfolios
-    if st.checkbox('Show Random Portfolios'):
+    ax.plot(volatilities[efficient_mask]*100, returns[efficient_mask]*100, 'r-', label='Efficient Frontier')
+    ax.plot(volatilities[~efficient_mask]*100, returns[~efficient_mask]*100, 'r--', label='Inefficient Frontier')
+    ax.scatter(mvp_vol*100, mvp_return*100, color='red', s=100, label='MVP')
+    ax.scatter(mvp_vol*100, mvp_return*100, marker='*', s=400, edgecolor='black', facecolor='none')
+    
+    # Add random portfolios
+    if st.sidebar.checkbox('Show Random Portfolios'):
         random_weights = np.random.uniform(-0.5, 1.5, 1000)
         random_returns = random_weights*er_a + (1-random_weights)*er_b
         random_vols = np.sqrt(random_weights**2 * sigma_a**2 + (1-random_weights)**2 * sigma_b**2 + 2*random_weights*(1-random_weights)*cov)
         ax.scatter(random_vols*100, random_returns*100, color='gray', alpha=0.3, s=10)
 
-# Plot formatting
-ax.set_xlabel('Portfolio Volatility (%)')
-ax.set_ylabel('Portfolio Return (%)')
-ax.set_title('Two-Asset Efficient Frontier')
-ax.grid(True)
+# Formatting
+ax.set_xlabel('Volatility (%)', fontweight='bold')
+ax.set_ylabel('Return (%)', fontweight='bold')
+ax.set_title(f"Efficient Frontier | MVP at ({mvp_vol*100:.1f}%, {mvp_return*100:.1f}%)", pad=20, fontsize=14)
+ax.grid(True, alpha=0.3)
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 
+# Display plot without scrolling
 st.pyplot(fig)
