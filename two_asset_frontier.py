@@ -1,6 +1,6 @@
-import plotly.express as px
-import numpy as np
 import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Set layout to wide
 st.set_page_config(layout="wide")
@@ -48,15 +48,16 @@ mvp_std = np.sqrt(
 # Special case handling: If returns are equal, MVP is the only efficient portfolio
 if mu_A == mu_B:
     # Plot MVP as a single point
-    fig = px.scatter(x=[sigma_A * 100], y=[mu_A * 100], text=['Stock A'])
-    fig.add_scatter(x=[sigma_B * 100], y=[mu_B * 100], text=['Stock B'])
-    fig.add_scatter(x=[mvp_std * 100], y=[mvp_return * 100], text=['MVP'], mode='markers', marker=dict(size=20))
-    fig.update_layout(
-        title='Minimum Variance Portfolio',
-        xaxis_title='Standard Deviation (%)',
-        yaxis_title='Expected Return (%)',
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)  # Adjust legend position
-    )
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=150)  # Increased DPI for clarity
+    ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
+    ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
+    ax.scatter(mvp_std * 100, mvp_return * 100,
+               marker='*', color='black', s=200,
+               label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
+    ax.set_xlabel('Standard Deviation (%)')
+    ax.set_ylabel('Expected Return (%)')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+    ax.set_title('Minimum Variance Portfolio')
 else:
     # Split into efficient and inefficient frontiers
     efficient_mask = portfolio_returns >= mvp_return  # Keep only points above or equal to MVP's return
@@ -66,17 +67,21 @@ else:
     inefficient_stds = portfolio_stds[~efficient_mask]
 
     # Plotting
-    fig = px.scatter(x=[sigma_A * 100], y=[mu_A * 100], text=['Stock A'])
-    fig.add_scatter(x=[sigma_B * 100], y=[mu_B * 100], text=['Stock B'])
-    fig.add_scatter(x=[mvp_std * 100], y=[mvp_return * 100], text=['MVP'], mode='markers', marker=dict(size=20))
-    fig.add_scatter(x=efficient_stds * 100, y=efficient_returns * 100, mode='lines', line=dict(color='red'), name='Efficient Frontier')
-    fig.add_scatter(x=inefficient_stds * 100, y=inefficient_returns * 100, mode='lines', line=dict(color='red', dash='dash'), name='Inefficient Frontier')
-    fig.update_layout(
-        title='Efficient Frontier with MVP',
-        xaxis_title='Standard Deviation (%)',
-        yaxis_title='Expected Return (%)',
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)  # Adjust legend position
-    )
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=150)  # Increased DPI for clarity
+    ax.scatter(sigma_A * 100, mu_A * 100, color='blue', label='Stock A', zorder=3)  # Stock A marker
+    ax.scatter(sigma_B * 100, mu_B * 100, color='green', label='Stock B', zorder=3)  # Stock B marker
+    ax.scatter(mvp_std * 100, mvp_return * 100,
+               marker='*', color='black', s=200,
+               label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
+    ax.plot(efficient_stds * 100, efficient_returns * 100,
+            color='red', label='Efficient Frontier')
+    ax.plot(inefficient_stds * 100, inefficient_returns * 100,
+            color='red', linestyle='--', label='Inefficient Frontier')
+    ax.set_xlabel('Standard Deviation (%)')
+    ax.set_ylabel('Expected Return (%)')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
+    ax.set_title('Efficient Frontier with MVP')
 
 # Display plot in Streamlit app
-st.plotly_chart(fig, use_container_width=True)
+st.pyplot(fig)
+
