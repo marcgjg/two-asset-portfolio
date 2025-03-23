@@ -26,7 +26,7 @@ mu_B /= 100
 sigma_A /= 100
 sigma_B /= 100
 
-# Generate parametric efficient frontier
+# Generate parametric minimum-variance frontier
 alphas = np.linspace(0, 1, 100)
 portfolio_returns = alphas * mu_A + (1 - alphas) * mu_B
 portfolio_stds = np.sqrt(
@@ -45,6 +45,13 @@ mvp_std = np.sqrt(
     2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B
 )
 
+# Split into efficient and inefficient frontiers
+efficient_mask = portfolio_returns >= mvp_return  # Keep only points above or equal to MVP's return
+efficient_returns = portfolio_returns[efficient_mask]
+efficient_stds = portfolio_stds[efficient_mask]
+inefficient_returns = portfolio_returns[~efficient_mask]
+inefficient_stds = portfolio_stds[~efficient_mask]
+
 # Plotting
 fig, ax = plt.subplots(figsize=(6, 4))
 
@@ -57,9 +64,13 @@ ax.scatter(mvp_std * 100, mvp_return * 100,
            marker='*', color='black', s=200,
            label=f'MVP ({mvp_std*100:.2f}, {mvp_return*100:.2f})')
 
-# Plot efficient frontier
-ax.plot(portfolio_stds * 100, portfolio_returns * 100,
+# Plot efficient frontier (solid red line)
+ax.plot(efficient_stds * 100, efficient_returns * 100,
         color='red', label='Efficient Frontier')
+
+# Plot inefficient frontier (dashed red line)
+ax.plot(inefficient_stds * 100, inefficient_returns * 100,
+        color='red', linestyle='--', label='Inefficient Frontier')
 
 # Labels and legend
 ax.set_xlabel('Standard Deviation (%)')
