@@ -412,13 +412,29 @@ with st.expander("📘 Understanding the Efficient Frontier", expanded=False):
     
     The weight of asset A in the minimum variance portfolio is given by:
     
-    w_A = (σ²_B - ρ·σ_A·σ_B) / (σ²_A + σ²_B - 2·ρ·σ_A·σ_B)
+    $w_A = \\frac{\\sigma^2_B - \\rho \\cdot \\sigma_A \\cdot \\sigma_B}{\\sigma^2_A + \\sigma^2_B - 2 \\cdot \\rho \\cdot \\sigma_A \\cdot \\sigma_B}$
     
     where:
-    - σ²_A, σ²_B = variances of assets A and B
-    - ρ = correlation coefficient
-    - σ_A, σ_B = standard deviations of assets A and B
+    - $\\sigma^2_A$, $\\sigma^2_B$ = variances of assets A and B
+    - $\\rho$ = correlation coefficient
+    - $\\sigma_A$, $\\sigma_B$ = standard deviations of assets A and B
     """)
+    
+    # Display additional formulas
+    st.markdown("""
+    ### Portfolio Standard Deviation
+    
+    The standard deviation of a two-asset portfolio is:
+    
+    $\\sigma_p = \\sqrt{w_A^2 \\sigma_A^2 + (1-w_A)^2 \\sigma_B^2 + 2w_A(1-w_A)\\rho\\sigma_A\\sigma_B}$
+    
+    ### Portfolio Return
+    
+    The expected return of a two-asset portfolio is:
+    
+    $E(R_p) = w_A \\cdot E(R_A) + (1-w_A) \\cdot E(R_B)$
+    """)
+
 
 # Footer
 st.markdown('<div class="footer">Two-Asset Efficient Frontier Visualizer | For educational purposes</div>', unsafe_allow_html=True)
