@@ -433,6 +433,10 @@ with st.expander("📘 Understanding the Efficient Frontier", expanded=False):
     The expected return of a two-asset portfolio is:
     
     $E(R_p) = x_A \\cdot E(R_A) + x_B \\cdot E(R_B)$
+
+    where:
+
+    $x_A + x_B = 1$
     """)
 
 
