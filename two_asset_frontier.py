@@ -426,13 +426,13 @@ with st.expander("📘 Understanding the Efficient Frontier", expanded=False):
     
     The standard deviation of a two-asset portfolio is:
     
-    $\\sigma_p = \\sqrt{x_A^2 \\sigma_A^2 + (1-x_A)^2 \\sigma_B^2 + 2x_A\\x_B\\rho\\sigma_A\\sigma_B}$
+    $\\sigma_p = \\sqrt{x_A^2 \\sigma_A^2 + (1-x_A)^2 \\sigma_B^2 + 2x_A x_B\\rho\\sigma_A\\sigma_B}$
     
     ### Portfolio Return
     
     The expected return of a two-asset portfolio is:
     
-    $E(R_p) = x_A \\cdot E(R_A) + x_B) \\cdot E(R_B)$
+    $E(R_p) = x_A \\cdot E(R_A) + x_B \\cdot E(R_B)$
     """)
 
 
