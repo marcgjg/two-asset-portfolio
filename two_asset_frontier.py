@@ -443,4 +443,4 @@ with st.expander("📘 Understanding the Efficient Frontier", expanded=False):
 
 
 # Footer
-st.markdown('<div class="footer">Two-Asset Efficient Frontier Visualizer | For educational purposes</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">Two-Asset Efficient Frontier Visualizer | Developed by Prof. Marc Goergen with the help of ChatGPT, Perplexity and Claude</div>', unsafe_allow_html=True)
