@@ -6,11 +6,6 @@ import plotly.graph_objects as go
 
 import psutil
 
-memory = psutil.virtual_memory()
-st.metric("Used Memory", f"{memory.used / (1024.0 ** 2):.2f} MB")
-st.metric("Available Memory", f"{memory.available / (1024.0 ** 2):.2f} MB")
-st.metric("Memory Utilization", f"{memory.percent}%")
-
 
 
 # Set the page layout to wide and add a custom title/icon
@@ -20,6 +15,16 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+
+
+memory = psutil.virtual_memory()
+st.metric("Used Memory", f"{memory.used / (1024.0 ** 2):.2f} MB")
+st.metric("Available Memory", f"{memory.available / (1024.0 ** 2):.2f} MB")
+st.metric("Memory Utilization", f"{memory.percent}%")
+
+
+
 
 # Custom CSS for better styling (matching the previous apps)
 st.markdown("""
