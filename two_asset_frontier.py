@@ -3,6 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 
+
 # Set the page layout to wide and add a custom title/icon
 st.set_page_config(
     page_title="Two-Asset Frontier",
