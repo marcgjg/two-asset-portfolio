@@ -185,7 +185,15 @@ with col1:
     Diversification benefits are strongest when correlation is negative or low.
     """)
     st.markdown('</div>', unsafe_allow_html=True)
-    
+
+# Convert sliders to decimal form for calculations (do this before saving!)
+mu_A_decimal = mu_A / 100
+mu_B_decimal = mu_B / 100
+sigma_A_decimal = sigma_A / 100
+sigma_B_decimal = sigma_B / 100
+
+# Now go back to col1 context for the buttons
+with col1:
     # Add buttons for saving and resetting frontiers
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="subheader">Frontier Overlay Controls</div>', unsafe_allow_html=True)
@@ -193,12 +201,12 @@ with col1:
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.button('💾 Save Current Frontier', use_container_width=True):
-            # Save current frontier configuration
+            # Save current frontier configuration (in decimal form)
             frontier_data = {
-                'mu_A': mu_A,
-                'mu_B': mu_B,
-                'sigma_A': sigma_A,
-                'sigma_B': sigma_B,
+                'mu_A': mu_A_decimal,
+                'mu_B': mu_B_decimal,
+                'sigma_A': sigma_A_decimal,
+                'sigma_B': sigma_B_decimal,
                 'rho': rho,
                 'label': f'Frontier {len(st.session_state.saved_frontiers) + 1}'
             }
@@ -215,11 +223,11 @@ with col1:
     
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Convert sliders back to decimal form for calculations
-mu_A /= 100
-mu_B /= 100
-sigma_A /= 100
-sigma_B /= 100
+# Use decimal versions for the rest of calculations
+mu_A = mu_A_decimal
+mu_B = mu_B_decimal
+sigma_A = sigma_A_decimal
+sigma_B = sigma_B_decimal
 
 # Generate parametric minimum-variance frontier
 alphas = np.linspace(0, 1, 100)
