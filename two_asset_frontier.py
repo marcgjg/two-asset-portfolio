@@ -187,17 +187,28 @@ with col1:
     max_cov_pct = max_cov * 10000
     min_cov_pct = min_cov * 10000
     
+    # Initialize session state for preserving values across mode switches
+    if 'last_rho' not in st.session_state:
+        st.session_state.last_rho = -0.5
+    if 'last_cov_pct' not in st.session_state:
+        st.session_state.last_cov_pct = -0.5 * max_cov * 10000
+    
     if input_mode == "Correlation Coefficient":
         rho = st.slider('Correlation Coefficient (ρ)', 
-                        min_value=-1.0, max_value=1.0, value=-0.5, step=0.01,
+                        min_value=-1.0, max_value=1.0, value=st.session_state.last_rho, step=0.01,
                         help="Correlation between the two assets (-1 to 1)")
+        # Update session state
+        st.session_state.last_rho = rho
         # Calculate implied covariance
         covariance = rho * sigma_A_decimal_temp * sigma_B_decimal_temp
+        # Update covariance in session state for when user switches back
+        st.session_state.last_cov_pct = covariance * 10000
         st.info(f"**Implied Covariance:** {covariance*10000:.4f} (%²)")
     else:  # Covariance mode
-        # Default covariance value (corresponding to ρ = -0.5)
-        default_cov = -0.5 * max_cov
-        default_cov_pct = default_cov * 10000
+        # Use the last correlation to calculate default covariance
+        default_cov_pct = st.session_state.last_rho * max_cov * 10000
+        # Clamp to valid range
+        default_cov_pct = max(min_cov_pct, min(max_cov_pct, default_cov_pct))
         
         covariance_pct = st.slider(
             'Covariance (%²)', 
@@ -208,6 +219,8 @@ with col1:
             help=f"Covariance between the two assets. Valid range: [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²"
         )
         covariance = covariance_pct / 10000
+        # Update session state
+        st.session_state.last_cov_pct = covariance_pct
         
         # Calculate implied correlation
         if sigma_A_decimal_temp > 0 and sigma_B_decimal_temp > 0:
@@ -217,6 +230,8 @@ with col1:
         else:
             rho = 0.0
         
+        # Update correlation in session state for when user switches back
+        st.session_state.last_rho = rho
         st.info(f"**Implied Correlation (ρ):** {rho:.4f}")
     
     st.markdown('</div>', unsafe_allow_html=True)
