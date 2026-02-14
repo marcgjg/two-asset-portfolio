@@ -3,6 +3,50 @@ import numpy as np
 import plotly.graph_objects as go
 
 
+# Helper function to calculate frontier data
+def calculate_frontier_data(mu_A, mu_B, sigma_A, sigma_B, rho):
+    """Calculate frontier data for given parameters"""
+    alphas = np.linspace(0, 1, 100)
+    portfolio_returns = alphas * mu_A + (1 - alphas) * mu_B
+    portfolio_stds = np.sqrt(
+        alphas**2 * sigma_A**2 +
+        (1 - alphas)**2 * sigma_B**2 +
+        2 * alphas * (1 - alphas) * rho * sigma_A * sigma_B
+    )
+    
+    # Compute Minimum Variance Portfolio
+    denominator = sigma_A**2 + sigma_B**2 - 2 * rho * sigma_A * sigma_B
+    if denominator == 0:
+        w_star = sigma_B / (sigma_A + sigma_B)
+    else:
+        w_star = (sigma_B**2 - rho * sigma_A * sigma_B) / denominator
+    
+    w_star = max(0, min(w_star, 1))
+    mvp_return = w_star * mu_A + (1 - w_star) * mu_B
+    mvp_variance = w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B
+    mvp_std = np.sqrt(mvp_variance) if mvp_variance >= 0 else 0
+    
+    # Split into efficient and inefficient frontiers
+    efficient_mask = portfolio_returns >= mvp_return
+    efficient_returns = portfolio_returns[efficient_mask]
+    efficient_stds = portfolio_stds[efficient_mask]
+    inefficient_returns = portfolio_returns[~efficient_mask]
+    inefficient_stds = portfolio_stds[~efficient_mask]
+    
+    return {
+        'efficient_returns': efficient_returns,
+        'efficient_stds': efficient_stds,
+        'inefficient_returns': inefficient_returns,
+        'inefficient_stds': inefficient_stds,
+        'mvp_return': mvp_return,
+        'mvp_std': mvp_std,
+        'w_star': w_star,
+        'mu_A': mu_A,
+        'mu_B': mu_B,
+        'sigma_A': sigma_A,
+        'sigma_B': sigma_B
+    }
+
 
 # Set the page layout to wide and add a custom title/icon
 st.set_page_config(
@@ -11,6 +55,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Initialize session state for saved frontiers
+if 'saved_frontiers' not in st.session_state:
+    st.session_state.saved_frontiers = []
 
 
 # Custom CSS for better styling (matching the previous apps)
@@ -137,6 +185,35 @@ with col1:
     Diversification benefits are strongest when correlation is negative or low.
     """)
     st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Add buttons for saving and resetting frontiers
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="subheader">Frontier Overlay Controls</div>', unsafe_allow_html=True)
+    
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button('💾 Save Current Frontier', use_container_width=True):
+            # Save current frontier configuration
+            frontier_data = {
+                'mu_A': mu_A,
+                'mu_B': mu_B,
+                'sigma_A': sigma_A,
+                'sigma_B': sigma_B,
+                'rho': rho,
+                'label': f'Frontier {len(st.session_state.saved_frontiers) + 1}'
+            }
+            st.session_state.saved_frontiers.append(frontier_data)
+            st.success(f'✅ Saved as Frontier {len(st.session_state.saved_frontiers)}')
+    
+    with col_btn2:
+        if st.button('🔄 Reset All Frontiers', use_container_width=True):
+            st.session_state.saved_frontiers = []
+            st.info('All saved frontiers cleared')
+    
+    if len(st.session_state.saved_frontiers) > 0:
+        st.markdown(f"**{len(st.session_state.saved_frontiers)} frontier(s) saved**")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Convert sliders back to decimal form for calculations
 mu_A /= 100
@@ -182,6 +259,43 @@ if mu_A == mu_B:
         st.markdown('<div class="card plot-container">', unsafe_allow_html=True)
         
         fig = go.Figure()
+        
+        # Define colors for saved frontiers
+        saved_colors = ['#9CA3AF', '#6B7280', '#4B5563', '#374151', '#1F2937']
+        
+        # Add saved frontiers first (in background)
+        for idx, saved_frontier in enumerate(st.session_state.saved_frontiers):
+            saved_data = calculate_frontier_data(
+                saved_frontier['mu_A'],
+                saved_frontier['mu_B'],
+                saved_frontier['sigma_A'],
+                saved_frontier['sigma_B'],
+                saved_frontier['rho']
+            )
+            color = saved_colors[idx % len(saved_colors)]
+            
+            # Add saved efficient frontier
+            fig.add_trace(go.Scatter(
+                x=saved_data['efficient_stds'] * 100,
+                y=saved_data['efficient_returns'] * 100,
+                mode='lines',
+                name=saved_frontier['label'],
+                line=dict(color=color, width=2),
+                opacity=0.6,
+                hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
+            ))
+            
+            # Add saved inefficient frontier
+            fig.add_trace(go.Scatter(
+                x=saved_data['inefficient_stds'] * 100,
+                y=saved_data['inefficient_returns'] * 100,
+                mode='lines',
+                name=f"{saved_frontier['label']} (Inefficient)",
+                line=dict(color=color, width=2, dash='dash'),
+                opacity=0.4,
+                showlegend=False,
+                hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
+            ))
         
         # Add Stock A and B points
         fig.add_trace(go.Scatter(
@@ -286,23 +400,60 @@ else:
         
         fig = go.Figure()
         
-        # Add efficient frontier
+        # Define colors for saved frontiers (cycle through these)
+        saved_colors = ['#9CA3AF', '#6B7280', '#4B5563', '#374151', '#1F2937']
+        
+        # Add saved frontiers first (in background)
+        for idx, saved_frontier in enumerate(st.session_state.saved_frontiers):
+            saved_data = calculate_frontier_data(
+                saved_frontier['mu_A'],
+                saved_frontier['mu_B'],
+                saved_frontier['sigma_A'],
+                saved_frontier['sigma_B'],
+                saved_frontier['rho']
+            )
+            color = saved_colors[idx % len(saved_colors)]
+            
+            # Add saved efficient frontier
+            fig.add_trace(go.Scatter(
+                x=saved_data['efficient_stds'] * 100,
+                y=saved_data['efficient_returns'] * 100,
+                mode='lines',
+                name=saved_frontier['label'],
+                line=dict(color=color, width=2),
+                opacity=0.6,
+                hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
+            ))
+            
+            # Add saved inefficient frontier
+            fig.add_trace(go.Scatter(
+                x=saved_data['inefficient_stds'] * 100,
+                y=saved_data['inefficient_returns'] * 100,
+                mode='lines',
+                name=f"{saved_frontier['label']} (Inefficient)",
+                line=dict(color=color, width=2, dash='dash'),
+                opacity=0.4,
+                showlegend=False,
+                hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
+            ))
+        
+        # Add current efficient frontier (highlighted)
         fig.add_trace(go.Scatter(
             x=efficient_stds * 100,
             y=efficient_returns * 100,
             mode='lines',
-            name='Efficient Frontier',
-            line=dict(color='#2563EB', width=3),
+            name='Current Efficient Frontier',
+            line=dict(color='#2563EB', width=4),
             hovertemplate='Risk: %{x:.2f}%<br>Return: %{y:.2f}%<extra></extra>'
         ))
         
-        # Add inefficient frontier
+        # Add current inefficient frontier
         fig.add_trace(go.Scatter(
             x=inefficient_stds * 100,
             y=inefficient_returns * 100,
             mode='lines',
-            name='Inefficient Frontier',
-            line=dict(color='#2563EB', width=3, dash='dash'),
+            name='Current Inefficient Frontier',
+            line=dict(color='#2563EB', width=4, dash='dash'),
             hovertemplate='Risk: %{x:.2f}%<br>Return: %{y:.2f}%<extra></extra>'
         ))
         
