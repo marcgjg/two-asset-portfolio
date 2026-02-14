@@ -245,7 +245,7 @@ mu_B_decimal = mu_B / 100
 sigma_A_decimal = sigma_A / 100
 sigma_B_decimal = sigma_B / 100
 
-# Now go back to col1 context for the buttons
+# Continue in col1 context for the buttons (right after the correlation/covariance section)
 with col1:
     # Add buttons for saving and resetting frontiers
     st.markdown('<div class="card">', unsafe_allow_html=True)
