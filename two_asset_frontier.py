@@ -167,20 +167,73 @@ with col1:
                         min_value=0.0, max_value=50.0, value=8.9, step=0.1,
                         help="Annual standard deviation (volatility)")
     
-    rho = st.slider('Correlation Coefficient', 
-                    min_value=-1.0, max_value=1.0, value=-0.5, step=0.01,
-                    help="Correlation between the two assets (-1 to 1)")
+    st.markdown("#### Relationship Between Assets")
+    
+    # Toggle between correlation and covariance input
+    input_mode = st.radio(
+        "Input method:",
+        options=["Correlation Coefficient", "Covariance"],
+        horizontal=True,
+        help="Choose whether to input correlation (ρ) or covariance directly"
+    )
+    
+    # Calculate the valid covariance range based on current standard deviations
+    sigma_A_decimal_temp = sigma_A / 100
+    sigma_B_decimal_temp = sigma_B / 100
+    max_cov = sigma_A_decimal_temp * sigma_B_decimal_temp
+    min_cov = -max_cov
+    
+    # Convert to percentage for display (multiply by 10000 to show as percentage squared)
+    max_cov_pct = max_cov * 10000
+    min_cov_pct = min_cov * 10000
+    
+    if input_mode == "Correlation Coefficient":
+        rho = st.slider('Correlation Coefficient (ρ)', 
+                        min_value=-1.0, max_value=1.0, value=-0.5, step=0.01,
+                        help="Correlation between the two assets (-1 to 1)")
+        # Calculate implied covariance
+        covariance = rho * sigma_A_decimal_temp * sigma_B_decimal_temp
+        st.info(f"**Implied Covariance:** {covariance*10000:.4f} (%²)")
+    else:  # Covariance mode
+        # Default covariance value (corresponding to ρ = -0.5)
+        default_cov = -0.5 * max_cov
+        default_cov_pct = default_cov * 10000
+        
+        covariance_pct = st.slider(
+            'Covariance (%²)', 
+            min_value=min_cov_pct, 
+            max_value=max_cov_pct, 
+            value=default_cov_pct, 
+            step=0.01,
+            help=f"Covariance between the two assets. Valid range: [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²"
+        )
+        covariance = covariance_pct / 10000
+        
+        # Calculate implied correlation
+        if sigma_A_decimal_temp > 0 and sigma_B_decimal_temp > 0:
+            rho = covariance / (sigma_A_decimal_temp * sigma_B_decimal_temp)
+            # Clamp to [-1, 1] to handle numerical precision issues
+            rho = max(-1.0, min(1.0, rho))
+        else:
+            rho = 0.0
+        
+        st.info(f"**Implied Correlation (ρ):** {rho:.4f}")
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Information box for correlation
+    # Information box for correlation and covariance
     st.markdown('<div class="info-box">', unsafe_allow_html=True)
     st.markdown(f"""
-    **Current Correlation: {rho:.2f}**
+    **Current Values:**
+    - Correlation (ρ): {rho:.4f}
+    - Covariance: {covariance*10000:.4f} (%²)
     
-    - Perfect negative correlation: -1.0
+    **Valid Covariance Range:** [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²
+    
+    **Correlation interpretation:**
+    - Perfect negative: -1.0
     - No correlation: 0.0
-    - Perfect positive correlation: 1.0
+    - Perfect positive: 1.0
     
     Diversification benefits are strongest when correlation is negative or low.
     """)
@@ -565,40 +618,52 @@ with st.expander("📘 Understanding the Efficient Frontier", expanded=False):
     
     **Minimum Variance Portfolio (MVP)**: The portfolio with the lowest possible risk, regardless of return.
     
-    **Correlation Effects**:
-    - Negative correlation (-1 to 0): Strong diversification benefits
-    - Zero correlation (0): Good diversification 
-    - Positive correlation (0 to +1): Limited diversification benefits
+    **Correlation vs. Covariance**:
+    - **Correlation (ρ)**: Standardized measure of linear relationship, ranges from -1 to +1
+    - **Covariance**: Actual measure of how returns move together, units are (%²)
+    - **Relationship**: Cov(A,B) = ρ × σ_A × σ_B
     
-    ### Portfolio Optimization
+    **Correlation/Covariance Effects**:
+    - Negative correlation/covariance: Strong diversification benefits
+    - Zero correlation/covariance: Good diversification 
+    - Positive correlation/covariance: Limited diversification benefits
+    
+    ### Portfolio Optimization (using covariance)
     
     The weight of asset A in the minimum variance portfolio is given by:
     
-    $x_A = \\frac{\\sigma^2_B - \\rho \\cdot \\sigma_A \\cdot \\sigma_B}{\\sigma^2_A + \\sigma^2_B - 2 \\cdot \\rho \\cdot \\sigma_A \\cdot \\sigma_B}$
+    $$x_A = \\frac{\\sigma^2_B - Cov(A,B)}{\\sigma^2_A + \\sigma^2_B - 2 \\cdot Cov(A,B)}$$
     
     where:
     - $\\sigma^2_A$, $\\sigma^2_B$ = variances of assets A and B
-    - $\\rho$ = correlation coefficient
-    - $\\sigma_A$, $\\sigma_B$ = standard deviations of assets A and B
+    - $Cov(A,B)$ = covariance between assets A and B
+    
+    **Alternative formula (using correlation)**:
+    
+    $$x_A = \\frac{\\sigma^2_B - \\rho \\cdot \\sigma_A \\cdot \\sigma_B}{\\sigma^2_A + \\sigma^2_B - 2 \\cdot \\rho \\cdot \\sigma_A \\cdot \\sigma_B}$$
     """)
     
     # Display additional formulas
     st.markdown("""
     ### Portfolio Standard Deviation
     
-    The standard deviation of a two-asset portfolio is:
+    **Using covariance**:
     
-    $\\sigma_p = \\sqrt{x_A^2 \\sigma_A^2 + x_B^2 \\sigma_B^2 + 2x_A x_B\\rho\\sigma_A\\sigma_B}$
+    $$\\sigma_p = \\sqrt{x_A^2 \\sigma_A^2 + x_B^2 \\sigma_B^2 + 2x_A x_B \\cdot Cov(A,B)}$$
+    
+    **Using correlation**:
+    
+    $$\\sigma_p = \\sqrt{x_A^2 \\sigma_A^2 + x_B^2 \\sigma_B^2 + 2x_A x_B\\rho\\sigma_A\\sigma_B}$$
     
     ### Portfolio Return
     
     The expected return of a two-asset portfolio is:
     
-    $E(R_p) = x_A \\cdot E(R_A) + x_B \\cdot E(R_B)$
+    $$E(R_p) = x_A \\cdot E(R_A) + x_B \\cdot E(R_B)$$
 
     where:
 
-    $x_A + x_B = 1$
+    $$x_A + x_B = 1$$
     """)
 
 
