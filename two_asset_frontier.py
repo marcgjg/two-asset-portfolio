@@ -238,18 +238,16 @@ with col1:
     Diversification benefits are strongest when correlation is negative or low.
     """)
     st.markdown('</div>', unsafe_allow_html=True)
-
-# Convert sliders to decimal form for calculations (do this before saving!)
-mu_A_decimal = mu_A / 100
-mu_B_decimal = mu_B / 100
-sigma_A_decimal = sigma_A / 100
-sigma_B_decimal = sigma_B / 100
-
-# Continue in col1 context for the buttons (right after the correlation/covariance section)
-with col1:
-    # Add buttons for saving and resetting frontiers
+    
+    # Add buttons for saving and resetting frontiers (still inside col1)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="subheader">Frontier Overlay Controls</div>', unsafe_allow_html=True)
+    
+    # Convert sliders to decimal form for calculations (need these for saving)
+    mu_A_decimal = mu_A / 100
+    mu_B_decimal = mu_B / 100
+    sigma_A_decimal = sigma_A / 100
+    sigma_B_decimal = sigma_B / 100
     
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
