@@ -221,25 +221,7 @@ with col1:
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Information box for correlation and covariance
-    st.markdown('<div class="info-box">', unsafe_allow_html=True)
-    st.markdown(f"""
-    **Current Values:**
-    - Correlation (ρ): {rho:.4f}
-    - Covariance: {covariance*10000:.4f} (%²)
-    
-    **Valid Covariance Range:** [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²
-    
-    **Correlation interpretation:**
-    - Perfect negative: -1.0
-    - No correlation: 0.0
-    - Perfect positive: 1.0
-    
-    Diversification benefits are strongest when correlation is negative or low.
-    """)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Add buttons for saving and resetting frontiers (still inside col1)
+    # Add buttons for saving and resetting frontiers (right after correlation/covariance input)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="subheader">Frontier Overlay Controls</div>', unsafe_allow_html=True)
     
@@ -272,6 +254,24 @@ with col1:
     if len(st.session_state.saved_frontiers) > 0:
         st.markdown(f"**{len(st.session_state.saved_frontiers)} frontier(s) saved**")
     
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Information box for correlation and covariance (now appears after the buttons)
+    st.markdown('<div class="info-box">', unsafe_allow_html=True)
+    st.markdown(f"""
+    **Current Values:**
+    - Correlation (ρ): {rho:.4f}
+    - Covariance: {covariance*10000:.4f} (%²)
+    
+    **Valid Covariance Range:** [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²
+    
+    **Correlation interpretation:**
+    - Perfect negative: -1.0
+    - No correlation: 0.0
+    - Perfect positive: 1.0
+    
+    Diversification benefits are strongest when correlation is negative or low.
+    """)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Use decimal versions for the rest of calculations
