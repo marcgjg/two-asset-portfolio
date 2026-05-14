@@ -60,6 +60,29 @@ st.set_page_config(
 if 'saved_frontiers' not in st.session_state:
     st.session_state.saved_frontiers = []
 
+# ── Session-state defaults for the six synced parameters ──
+_DEFAULTS = {
+    'mu_A_val': 8.9,
+    'mu_B_val': 9.2,
+    'sigma_A_val': 7.9,
+    'sigma_B_val': 8.9,
+    'last_rho': -0.5,
+    'last_cov_pct': None,  # will be computed on first run
+}
+for _k, _v in _DEFAULTS.items():
+    if _k not in st.session_state:
+        st.session_state[_k] = _v
+
+
+# ── Sync callbacks: slider ↔ number_input ──
+def _sync(src_key, dst_key):
+    """Copy the value that the user just changed into the mirror widget."""
+    st.session_state[dst_key] = st.session_state[src_key]
+
+def _sync_to_state(src_key, state_key):
+    """Copy widget value into a plain state key (no mirror widget)."""
+    st.session_state[state_key] = st.session_state[src_key]
+
 
 # Custom CSS for better styling (matching the previous apps)
 st.markdown("""
@@ -139,7 +162,7 @@ with st.expander("ℹ️ About this tool", expanded=False):
     - The **Efficient Frontier** shows all optimal portfolios that offer the highest expected return for a defined level of risk
     - The **Minimum Variance Portfolio (MVP)** is the portfolio with the lowest possible risk
     
-    Adjust the sliders to see how changes in returns, standard deviations, and correlation affect the frontier.
+    Adjust the sliders **or type a value directly into the number fields** to see how changes in returns, standard deviations, and correlation affect the frontier.
     """)
 
 # Create columns for inputs and plot
@@ -150,23 +173,105 @@ with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="subheader">Asset Parameters</div>', unsafe_allow_html=True)
     
-    # Define sliders for inputs with better organization
+    # ── Expected Returns ──
     st.markdown("#### Expected Returns")
-    mu_A = st.slider('Expected Return of Stock A (%)', 
-                     min_value=0.0, max_value=50.0, value=8.9, step=0.1,
-                     help="Annual expected return")
-    mu_B = st.slider('Expected Return of Stock B (%)', 
-                     min_value=0.0, max_value=50.0, value=9.2, step=0.1,
-                     help="Annual expected return")
-    
+
+    # Stock A return
+    sl_muA, ni_muA = st.columns([3, 1])
+    with sl_muA:
+        st.slider(
+            'Expected Return of Stock A (%)',
+            min_value=0.0, max_value=50.0, step=0.1,
+            key='mu_A_slider',
+            value=st.session_state.mu_A_val,
+            on_change=_sync, args=('mu_A_slider', 'mu_A_number'),
+            help="Annual expected return"
+        )
+    with ni_muA:
+        st.number_input(
+            'Stock A (%)',
+            min_value=0.0, max_value=50.0, step=0.1,
+            key='mu_A_number',
+            value=st.session_state.mu_A_val,
+            on_change=_sync, args=('mu_A_number', 'mu_A_slider'),
+            label_visibility='collapsed'
+        )
+    mu_A = st.session_state.mu_A_slider
+    st.session_state.mu_A_val = mu_A
+
+    # Stock B return
+    sl_muB, ni_muB = st.columns([3, 1])
+    with sl_muB:
+        st.slider(
+            'Expected Return of Stock B (%)',
+            min_value=0.0, max_value=50.0, step=0.1,
+            key='mu_B_slider',
+            value=st.session_state.mu_B_val,
+            on_change=_sync, args=('mu_B_slider', 'mu_B_number'),
+            help="Annual expected return"
+        )
+    with ni_muB:
+        st.number_input(
+            'Stock B (%)',
+            min_value=0.0, max_value=50.0, step=0.1,
+            key='mu_B_number',
+            value=st.session_state.mu_B_val,
+            on_change=_sync, args=('mu_B_number', 'mu_B_slider'),
+            label_visibility='collapsed'
+        )
+    mu_B = st.session_state.mu_B_slider
+    st.session_state.mu_B_val = mu_B
+
+    # ── Risk Parameters ──
     st.markdown("#### Risk Parameters")
-    sigma_A = st.slider('Standard Deviation of Stock A (%)', 
-                        min_value=0.0, max_value=50.0, value=7.9, step=0.1,
-                        help="Annual standard deviation (volatility)")
-    sigma_B = st.slider('Standard Deviation of Stock B (%)', 
-                        min_value=0.0, max_value=50.0, value=8.9, step=0.1,
-                        help="Annual standard deviation (volatility)")
-    
+
+    # Stock A std dev
+    sl_sA, ni_sA = st.columns([3, 1])
+    with sl_sA:
+        st.slider(
+            'Standard Deviation of Stock A (%)',
+            min_value=0.0, max_value=50.0, step=0.1,
+            key='sigma_A_slider',
+            value=st.session_state.sigma_A_val,
+            on_change=_sync, args=('sigma_A_slider', 'sigma_A_number'),
+            help="Annual standard deviation (volatility)"
+        )
+    with ni_sA:
+        st.number_input(
+            'Std A (%)',
+            min_value=0.0, max_value=50.0, step=0.1,
+            key='sigma_A_number',
+            value=st.session_state.sigma_A_val,
+            on_change=_sync, args=('sigma_A_number', 'sigma_A_slider'),
+            label_visibility='collapsed'
+        )
+    sigma_A = st.session_state.sigma_A_slider
+    st.session_state.sigma_A_val = sigma_A
+
+    # Stock B std dev
+    sl_sB, ni_sB = st.columns([3, 1])
+    with sl_sB:
+        st.slider(
+            'Standard Deviation of Stock B (%)',
+            min_value=0.0, max_value=50.0, step=0.1,
+            key='sigma_B_slider',
+            value=st.session_state.sigma_B_val,
+            on_change=_sync, args=('sigma_B_slider', 'sigma_B_number'),
+            help="Annual standard deviation (volatility)"
+        )
+    with ni_sB:
+        st.number_input(
+            'Std B (%)',
+            min_value=0.0, max_value=50.0, step=0.1,
+            key='sigma_B_number',
+            value=st.session_state.sigma_B_val,
+            on_change=_sync, args=('sigma_B_number', 'sigma_B_slider'),
+            label_visibility='collapsed'
+        )
+    sigma_B = st.session_state.sigma_B_slider
+    st.session_state.sigma_B_val = sigma_B
+
+    # ── Relationship Between Assets ──
     st.markdown("#### Relationship Between Assets")
     
     # Toggle between correlation and covariance input
@@ -187,16 +292,32 @@ with col1:
     max_cov_pct = max_cov * 10000
     min_cov_pct = min_cov * 10000
     
-    # Initialize session state for preserving values across mode switches
-    if 'last_rho' not in st.session_state:
-        st.session_state.last_rho = -0.5
-    if 'last_cov_pct' not in st.session_state:
-        st.session_state.last_cov_pct = -0.5 * max_cov * 10000
+    # Initialise last_cov_pct on first run (depends on sigma values)
+    if st.session_state.last_cov_pct is None:
+        st.session_state.last_cov_pct = st.session_state.last_rho * max_cov * 10000
     
     if input_mode == "Correlation Coefficient":
-        rho = st.slider('Correlation Coefficient (ρ)', 
-                        min_value=-1.0, max_value=1.0, value=st.session_state.last_rho, step=0.01,
-                        help="Correlation between the two assets (-1 to 1)")
+        sl_rho, ni_rho = st.columns([3, 1])
+        with sl_rho:
+            st.slider(
+                'Correlation Coefficient (ρ)',
+                min_value=-1.0, max_value=1.0, step=0.01,
+                key='rho_slider',
+                value=st.session_state.last_rho,
+                on_change=_sync, args=('rho_slider', 'rho_number'),
+                help="Correlation between the two assets (-1 to 1)"
+            )
+        with ni_rho:
+            st.number_input(
+                'ρ',
+                min_value=-1.0, max_value=1.0, step=0.01,
+                key='rho_number',
+                value=st.session_state.last_rho,
+                on_change=_sync, args=('rho_number', 'rho_slider'),
+                format="%.2f",
+                label_visibility='collapsed'
+            )
+        rho = st.session_state.rho_slider
         # Update session state
         st.session_state.last_rho = rho
         # Calculate implied covariance
@@ -209,15 +330,32 @@ with col1:
         default_cov_pct = st.session_state.last_rho * max_cov * 10000
         # Clamp to valid range
         default_cov_pct = max(min_cov_pct, min(max_cov_pct, default_cov_pct))
-        
-        covariance_pct = st.slider(
-            'Covariance (%²)', 
-            min_value=min_cov_pct, 
-            max_value=max_cov_pct, 
-            value=default_cov_pct, 
-            step=0.01,
-            help=f"Covariance between the two assets. Valid range: [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²"
-        )
+
+        sl_cov, ni_cov = st.columns([3, 1])
+        with sl_cov:
+            st.slider(
+                'Covariance (%²)',
+                min_value=float(min_cov_pct),
+                max_value=float(max_cov_pct),
+                value=float(default_cov_pct),
+                step=0.01,
+                key='cov_slider',
+                on_change=_sync, args=('cov_slider', 'cov_number'),
+                help=f"Covariance between the two assets. Valid range: [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²"
+            )
+        with ni_cov:
+            st.number_input(
+                'Cov (%²)',
+                min_value=float(min_cov_pct),
+                max_value=float(max_cov_pct),
+                value=float(default_cov_pct),
+                step=0.01,
+                key='cov_number',
+                on_change=_sync, args=('cov_number', 'cov_slider'),
+                format="%.4f",
+                label_visibility='collapsed'
+            )
+        covariance_pct = st.session_state.cov_slider
         covariance = covariance_pct / 10000
         # Update session state
         st.session_state.last_cov_pct = covariance_pct
@@ -273,6 +411,8 @@ with col1:
     
     # Information box for correlation and covariance (now appears after the buttons)
     st.markdown('<div class="info-box">', unsafe_allow_html=True)
+    if input_mode == "Correlation Coefficient":
+        covariance = rho * sigma_A_decimal_temp * sigma_B_decimal_temp
     st.markdown(f"""
     **Current Values:**
     - Correlation (ρ): {rho:.4f}
