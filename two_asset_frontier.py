@@ -273,6 +273,7 @@ with col1:
     sigma_B = st.session_state.sigma_B_slider
     st.session_state.sigma_B_val = sigma_B
 
+    # ── Relationship Between Assets ──
     st.markdown("#### Relationship Between Assets")
     
     # Toggle between correlation and covariance input
@@ -292,12 +293,6 @@ with col1:
     # Convert to percentage for display (multiply by 10000 to show as percentage squared)
     max_cov_pct = max_cov * 10000
     min_cov_pct = min_cov * 10000
-    
-    # Initialize session state for preserving values across mode switches
-    if 'last_rho' not in st.session_state:
-        st.session_state.last_rho = -0.5
-    if 'last_cov_pct' not in st.session_state:
-        st.session_state.last_cov_pct = -0.5 * max_cov * 10000
     
     if input_mode == "Correlation Coefficient":
         sl_rho, ni_rho = st.columns([3, 1])
@@ -320,17 +315,13 @@ with col1:
                 label_visibility='collapsed'
             )
         rho = st.session_state.rho_slider
-        # Update session state
         st.session_state.last_rho = rho
         # Calculate implied covariance
         covariance = rho * sigma_A_decimal_temp * sigma_B_decimal_temp
-        # Update covariance in session state for when user switches back
         st.session_state.last_cov_pct = covariance * 10000
         st.info(f"**Implied Covariance:** {covariance*10000:.4f} (%²)")
     else:  # Covariance mode
-        # Use the last correlation to calculate default covariance
         default_cov_pct = st.session_state.last_rho * max_cov * 10000
-        # Clamp to valid range
         default_cov_pct = max(min_cov_pct, min(max_cov_pct, default_cov_pct))
         
         sl_cov, ni_cov = st.columns([3, 1])
@@ -342,6 +333,7 @@ with col1:
                 step=0.01,
                 key='cov_slider',
                 value=float(default_cov_pct),
+                on_change=_sync, args=('cov_slider', 'cov_number'),
                 help=f"Covariance between the two assets. Valid range: [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²"
             )
         with ni_cov:
@@ -355,59 +347,50 @@ with col1:
                 on_change=_sync, args=('cov_number', 'cov_slider'),
                 label_visibility='collapsed'
             )
-        # Also sync slider → number
-        if 'cov_slider' in st.session_state and 'cov_number' in st.session_state:
-            # Use the slider value as the source of truth (it was set first)
-            pass
         covariance_pct = st.session_state.cov_slider
         covariance = covariance_pct / 10000
-        # Update session state
         st.session_state.last_cov_pct = covariance_pct
         
-        # Calculate implied correlation
         if sigma_A_decimal_temp > 0 and sigma_B_decimal_temp > 0:
             rho = covariance / (sigma_A_decimal_temp * sigma_B_decimal_temp)
-            # Clamp to [-1, 1] to handle numerical precision issues
             rho = max(-1.0, min(1.0, rho))
         else:
             rho = 0.0
         
-        # Update correlation in session state for when user switches back
         st.session_state.last_rho = rho
         st.info(f"**Implied Correlation (ρ):** {rho:.4f}")
     
     st.markdown('</div>', unsafe_allow_html=True)
-    
-    # ── Axis Tick Controls ──
+
+    # ── Axis Settings ──
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="subheader">Axis Settings</div>', unsafe_allow_html=True)
 
     tick_options = [0.1, 0.25, 0.5, 1.0, 2.0, 5.0]
 
-    col_xtick, col_ytick = st.columns(2)
-    with col_xtick:
+    col_xt, col_yt = st.columns(2)
+    with col_xt:
         x_tick = st.selectbox(
             'X-axis tick interval (%)',
             options=tick_options,
             index=tick_options.index(st.session_state.x_tick_val),
             key='x_tick_select',
-            help="Spacing between tick marks on the x-axis (Standard Deviation)"
+            help="Spacing between tick marks on the Standard Deviation axis"
         )
         st.session_state.x_tick_val = x_tick
-
-    with col_ytick:
+    with col_yt:
         y_tick = st.selectbox(
             'Y-axis tick interval (%)',
             options=tick_options,
             index=tick_options.index(st.session_state.y_tick_val),
             key='y_tick_select',
-            help="Spacing between tick marks on the y-axis (Expected Return)"
+            help="Spacing between tick marks on the Expected Return axis"
         )
         st.session_state.y_tick_val = y_tick
 
     st.markdown('</div>', unsafe_allow_html=True)
-
-    # Add buttons for saving and resetting frontiers
+    
+    # ── Frontier Overlay Controls ──
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="subheader">Frontier Overlay Controls</div>', unsafe_allow_html=True)
     
@@ -441,7 +424,7 @@ with col1:
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Information box for correlation and covariance
+    # Information box
     st.markdown('<div class="info-box">', unsafe_allow_html=True)
     st.markdown(f"""
     **Current Values:**
@@ -485,7 +468,6 @@ else:
 w_star = max(0, min(w_star, 1))
 
 mvp_return = w_star * mu_A + (1 - w_star) * mu_B
-
 mvp_variance = w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B
 
 if mvp_variance >= 0:
@@ -493,7 +475,28 @@ if mvp_variance >= 0:
 else:
     mvp_std = 0
 
-# Special case handling: If returns are equal, MVP is the only efficient portfolio
+
+# ── Helper to build the common axis layout dict ──
+def make_axis_layout(x_range, y_range):
+    return dict(
+        xaxis=dict(
+            title="Standard Deviation (%)",
+            tickformat='.2f',
+            dtick=x_tick,
+            gridcolor='rgba(230, 230, 230, 0.8)',
+            range=x_range,
+        ),
+        yaxis=dict(
+            title="Expected Return (%)",
+            tickformat='.2f',
+            dtick=y_tick,
+            gridcolor='rgba(230, 230, 230, 0.8)',
+            range=y_range,
+        ),
+    )
+
+
+# Special case handling: If returns are equal
 if mu_A == mu_B:
     with col2:
         st.markdown('<div class="card plot-container">', unsafe_allow_html=True)
@@ -534,8 +537,7 @@ if mu_A == mu_B:
             ))
         
         fig.add_trace(go.Scatter(
-            x=[sigma_A * 100],
-            y=[mu_A * 100],
+            x=[sigma_A * 100], y=[mu_A * 100],
             mode='markers',
             marker=dict(size=12, color='#10B981', symbol='square'),
             name='Stock A',
@@ -543,8 +545,7 @@ if mu_A == mu_B:
         ))
         
         fig.add_trace(go.Scatter(
-            x=[sigma_B * 100],
-            y=[mu_B * 100],
+            x=[sigma_B * 100], y=[mu_B * 100],
             mode='markers',
             marker=dict(size=12, color='#F97316', symbol='square'),
             name='Stock B',
@@ -552,8 +553,7 @@ if mu_A == mu_B:
         ))
         
         fig.add_trace(go.Scatter(
-            x=[mvp_std * 100],
-            y=[mvp_return * 100],
+            x=[mvp_std * 100], y=[mvp_return * 100],
             mode='markers',
             marker=dict(size=14, color='#EF4444', symbol='star'),
             name='Minimum Variance Portfolio',
@@ -563,28 +563,16 @@ if mu_A == mu_B:
         max_std = max(sigma_A, sigma_B) * 100 + 1
         min_return = min(mu_A, mu_B) * 100 - 1
         max_return = max(mu_A, mu_B) * 100 + 1
+
+        axes = make_axis_layout([0, max_std], [min_return, max_return])
         
         fig.update_layout(
             title=dict(
                 text="Minimum Variance Portfolio",
                 font=dict(size=24, family="Arial, sans-serif", color="#1E3A8A"),
-                x=0.5,
-                xanchor='center'
+                x=0.5, xanchor='center'
             ),
-            xaxis=dict(
-                title="Standard Deviation (%)",
-                tickformat='.2f',
-                dtick=x_tick,
-                gridcolor='rgba(230, 230, 230, 0.8)',
-                range=[0, max_std]
-            ),
-            yaxis=dict(
-                title="Expected Return (%)",
-                tickformat='.2f',
-                dtick=y_tick,
-                gridcolor='rgba(230, 230, 230, 0.8)',
-                range=[min_return, max_return]
-            ),
+            **axes,
             plot_bgcolor='rgba(248, 250, 252, 0.5)',
             paper_bgcolor='rgba(0,0,0,0)',
             hovermode='closest',
@@ -666,7 +654,7 @@ else:
                 hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
             ))
         
-        # Add current efficient frontier
+        # Current efficient frontier
         fig.add_trace(go.Scatter(
             x=efficient_stds * 100,
             y=efficient_returns * 100,
@@ -676,7 +664,7 @@ else:
             hovertemplate='Risk: %{x:.2f}%<br>Return: %{y:.2f}%<extra></extra>'
         ))
         
-        # Add current inefficient frontier
+        # Current inefficient frontier
         fig.add_trace(go.Scatter(
             x=inefficient_stds * 100,
             y=inefficient_returns * 100,
@@ -686,10 +674,9 @@ else:
             hovertemplate='Risk: %{x:.2f}%<br>Return: %{y:.2f}%<extra></extra>'
         ))
         
-        # Add Stock A and B points
+        # Stock A and B points
         fig.add_trace(go.Scatter(
-            x=[sigma_A * 100],
-            y=[mu_A * 100],
+            x=[sigma_A * 100], y=[mu_A * 100],
             mode='markers',
             marker=dict(size=12, color='#10B981', symbol='square'),
             name='Stock A',
@@ -697,18 +684,16 @@ else:
         ))
         
         fig.add_trace(go.Scatter(
-            x=[sigma_B * 100],
-            y=[mu_B * 100],
+            x=[sigma_B * 100], y=[mu_B * 100],
             mode='markers',
             marker=dict(size=12, color='#F97316', symbol='square'),
             name='Stock B',
             hovertemplate='Risk: %{x:.2f}%<br>Return: %{y:.2f}%<br>Asset: Stock B<extra></extra>'
         ))
         
-        # Add MVP point
+        # MVP point
         fig.add_trace(go.Scatter(
-            x=[mvp_std * 100],
-            y=[mvp_return * 100],
+            x=[mvp_std * 100], y=[mvp_return * 100],
             mode='markers',
             marker=dict(size=14, color='#EF4444', symbol='star'),
             name='Minimum Variance Portfolio',
@@ -717,29 +702,20 @@ else:
         
         max_efficient_std = max(efficient_stds, default=0)
         max_inefficient_std = max(inefficient_stds, default=0)
+
+        x_upper = max(max_efficient_std, max_inefficient_std) * 100 + 1
+        y_lower = min(min(efficient_returns), min(inefficient_returns, default=mu_A)) * 100 - 1
+        y_upper = max(max(efficient_returns), max(inefficient_returns, default=mu_B)) * 100 + 1
+
+        axes = make_axis_layout([0, x_upper], [y_lower, y_upper])
         
         fig.update_layout(
             title=dict(
                 text="Efficient Frontier with Minimum-Variance Portfolio (MVP)",
                 font=dict(size=24, family="Arial, sans-serif", color="#1E3A8A"),
-                x=0.5,
-                xanchor='center'
+                x=0.5, xanchor='center'
             ),
-            xaxis=dict(
-                title="Standard Deviation (%)",
-                tickformat='.2f',
-                dtick=x_tick,
-                gridcolor='rgba(230, 230, 230, 0.8)',
-                range=[0, max(max_efficient_std, max_inefficient_std) * 100 + 1]
-            ),
-            yaxis=dict(
-                title="Expected Return (%)",
-                tickformat='.2f',
-                dtick=y_tick,
-                gridcolor='rgba(230, 230, 230, 0.8)',
-                range=[min(min(efficient_returns), min(inefficient_returns, default=mu_A)) * 100 - 1, 
-                      max(max(efficient_returns), max(inefficient_returns, default=mu_B)) * 100 + 1]
-            ),
+            **axes,
             plot_bgcolor='rgba(248, 250, 252, 0.5)',
             paper_bgcolor='rgba(0,0,0,0)',
             hovermode='closest',
