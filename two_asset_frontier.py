@@ -60,7 +60,7 @@ st.set_page_config(
 if 'saved_frontiers' not in st.session_state:
     st.session_state.saved_frontiers = []
 
-# ── Session-state defaults for the six synced parameters ──
+# ── Session-state defaults for the synced parameters ──
 _DEFAULTS = {
     'mu_A_val': 8.9,
     'mu_B_val': 9.2,
@@ -68,6 +68,8 @@ _DEFAULTS = {
     'sigma_B_val': 8.9,
     'last_rho': -0.5,
     'last_cov_pct': None,  # will be computed on first run
+    'x_tick_val': 0.5,
+    'y_tick_val': 0.25,
 }
 for _k, _v in _DEFAULTS.items():
     if _k not in st.session_state:
@@ -84,7 +86,7 @@ def _sync_to_state(src_key, state_key):
     st.session_state[state_key] = st.session_state[src_key]
 
 
-# Custom CSS for better styling (matching the previous apps)
+# Custom CSS for better styling
 st.markdown("""
 <style>
     .main-header {
@@ -271,7 +273,6 @@ with col1:
     sigma_B = st.session_state.sigma_B_slider
     st.session_state.sigma_B_val = sigma_B
 
-    # ── Relationship Between Assets ──
     st.markdown("#### Relationship Between Assets")
     
     # Toggle between correlation and covariance input
@@ -292,9 +293,11 @@ with col1:
     max_cov_pct = max_cov * 10000
     min_cov_pct = min_cov * 10000
     
-    # Initialise last_cov_pct on first run (depends on sigma values)
-    if st.session_state.last_cov_pct is None:
-        st.session_state.last_cov_pct = st.session_state.last_rho * max_cov * 10000
+    # Initialize session state for preserving values across mode switches
+    if 'last_rho' not in st.session_state:
+        st.session_state.last_rho = -0.5
+    if 'last_cov_pct' not in st.session_state:
+        st.session_state.last_cov_pct = -0.5 * max_cov * 10000
     
     if input_mode == "Correlation Coefficient":
         sl_rho, ni_rho = st.columns([3, 1])
@@ -314,7 +317,6 @@ with col1:
                 key='rho_number',
                 value=st.session_state.last_rho,
                 on_change=_sync, args=('rho_number', 'rho_slider'),
-                format="%.2f",
                 label_visibility='collapsed'
             )
         rho = st.session_state.rho_slider
@@ -330,17 +332,16 @@ with col1:
         default_cov_pct = st.session_state.last_rho * max_cov * 10000
         # Clamp to valid range
         default_cov_pct = max(min_cov_pct, min(max_cov_pct, default_cov_pct))
-
+        
         sl_cov, ni_cov = st.columns([3, 1])
         with sl_cov:
             st.slider(
                 'Covariance (%²)',
                 min_value=float(min_cov_pct),
                 max_value=float(max_cov_pct),
-                value=float(default_cov_pct),
                 step=0.01,
                 key='cov_slider',
-                on_change=_sync, args=('cov_slider', 'cov_number'),
+                value=float(default_cov_pct),
                 help=f"Covariance between the two assets. Valid range: [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²"
             )
         with ni_cov:
@@ -348,13 +349,16 @@ with col1:
                 'Cov (%²)',
                 min_value=float(min_cov_pct),
                 max_value=float(max_cov_pct),
-                value=float(default_cov_pct),
                 step=0.01,
                 key='cov_number',
+                value=float(default_cov_pct),
                 on_change=_sync, args=('cov_number', 'cov_slider'),
-                format="%.4f",
                 label_visibility='collapsed'
             )
+        # Also sync slider → number
+        if 'cov_slider' in st.session_state and 'cov_number' in st.session_state:
+            # Use the slider value as the source of truth (it was set first)
+            pass
         covariance_pct = st.session_state.cov_slider
         covariance = covariance_pct / 10000
         # Update session state
@@ -374,11 +378,40 @@ with col1:
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Add buttons for saving and resetting frontiers (right after correlation/covariance input)
+    # ── Axis Tick Controls ──
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="subheader">Axis Settings</div>', unsafe_allow_html=True)
+
+    tick_options = [0.1, 0.25, 0.5, 1.0, 2.0, 5.0]
+
+    col_xtick, col_ytick = st.columns(2)
+    with col_xtick:
+        x_tick = st.selectbox(
+            'X-axis tick interval (%)',
+            options=tick_options,
+            index=tick_options.index(st.session_state.x_tick_val),
+            key='x_tick_select',
+            help="Spacing between tick marks on the x-axis (Standard Deviation)"
+        )
+        st.session_state.x_tick_val = x_tick
+
+    with col_ytick:
+        y_tick = st.selectbox(
+            'Y-axis tick interval (%)',
+            options=tick_options,
+            index=tick_options.index(st.session_state.y_tick_val),
+            key='y_tick_select',
+            help="Spacing between tick marks on the y-axis (Expected Return)"
+        )
+        st.session_state.y_tick_val = y_tick
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Add buttons for saving and resetting frontiers
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="subheader">Frontier Overlay Controls</div>', unsafe_allow_html=True)
     
-    # Convert sliders to decimal form for calculations (need these for saving)
+    # Convert sliders to decimal form for calculations
     mu_A_decimal = mu_A / 100
     mu_B_decimal = mu_B / 100
     sigma_A_decimal = sigma_A / 100
@@ -387,7 +420,6 @@ with col1:
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.button('💾 Save Current Frontier', use_container_width=True):
-            # Save current frontier configuration (in decimal form)
             frontier_data = {
                 'mu_A': mu_A_decimal,
                 'mu_B': mu_B_decimal,
@@ -409,14 +441,12 @@ with col1:
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Information box for correlation and covariance (now appears after the buttons)
+    # Information box for correlation and covariance
     st.markdown('<div class="info-box">', unsafe_allow_html=True)
-    if input_mode == "Correlation Coefficient":
-        covariance = rho * sigma_A_decimal_temp * sigma_B_decimal_temp
     st.markdown(f"""
     **Current Values:**
     - Correlation (ρ): {rho:.4f}
-    - Covariance: {covariance*10000:.4f} (%²)
+    - Covariance: {rho * sigma_A_decimal_temp * sigma_B_decimal_temp * 10000:.4f} (%²)
     
     **Valid Covariance Range:** [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²
     
@@ -447,37 +477,31 @@ portfolio_stds = np.sqrt(
 # Compute Minimum Variance Portfolio (MVP)
 denominator = sigma_A**2 + sigma_B**2 - 2 * rho * sigma_A * sigma_B
 
-# Handle division by zero
 if denominator == 0:
-    w_star = sigma_B / (sigma_A + sigma_B)  # Special handling for rho = -1
+    w_star = sigma_B / (sigma_A + sigma_B)
 else:
     w_star = (sigma_B**2 - rho * sigma_A * sigma_B) / denominator
 
-w_star = max(0, min(w_star, 1))  # Ensure no short sales
+w_star = max(0, min(w_star, 1))
 
 mvp_return = w_star * mu_A + (1 - w_star) * mu_B
 
-# Correctly calculate MVP standard deviation
 mvp_variance = w_star**2 * sigma_A**2 + (1 - w_star)**2 * sigma_B**2 + 2 * w_star * (1 - w_star) * rho * sigma_A * sigma_B
 
-# Check if variance is non-negative before calculating standard deviation
 if mvp_variance >= 0:
     mvp_std = np.sqrt(mvp_variance)
 else:
-    mvp_std = 0  # Set to 0 if variance is negative (theoretical minimum variance portfolio)
+    mvp_std = 0
 
 # Special case handling: If returns are equal, MVP is the only efficient portfolio
 if mu_A == mu_B:
-    # Create the plotly figure for equal returns case
     with col2:
         st.markdown('<div class="card plot-container">', unsafe_allow_html=True)
         
         fig = go.Figure()
         
-        # Define colors for saved frontiers
         saved_colors = ['#9CA3AF', '#6B7280', '#4B5563', '#374151', '#1F2937']
         
-        # Add saved frontiers first (in background)
         for idx, saved_frontier in enumerate(st.session_state.saved_frontiers):
             saved_data = calculate_frontier_data(
                 saved_frontier['mu_A'],
@@ -488,7 +512,6 @@ if mu_A == mu_B:
             )
             color = saved_colors[idx % len(saved_colors)]
             
-            # Add saved efficient frontier
             fig.add_trace(go.Scatter(
                 x=saved_data['efficient_stds'] * 100,
                 y=saved_data['efficient_returns'] * 100,
@@ -499,7 +522,6 @@ if mu_A == mu_B:
                 hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
             ))
             
-            # Add saved inefficient frontier
             fig.add_trace(go.Scatter(
                 x=saved_data['inefficient_stds'] * 100,
                 y=saved_data['inefficient_returns'] * 100,
@@ -511,7 +533,6 @@ if mu_A == mu_B:
                 hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
             ))
         
-        # Add Stock A and B points
         fig.add_trace(go.Scatter(
             x=[sigma_A * 100],
             y=[mu_A * 100],
@@ -530,7 +551,6 @@ if mu_A == mu_B:
             hovertemplate='Risk: %{x:.2f}%<br>Return: %{y:.2f}%<br>Asset: Stock B<extra></extra>'
         ))
         
-        # Add MVP point
         fig.add_trace(go.Scatter(
             x=[mvp_std * 100],
             y=[mvp_return * 100],
@@ -540,7 +560,6 @@ if mu_A == mu_B:
             hovertemplate=f'Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<br>Stock A: {w_star*100:.1f}%<br>Stock B: {(1-w_star)*100:.1f}%<extra></extra>'
         ))
         
-        # Customize the layout
         max_std = max(sigma_A, sigma_B) * 100 + 1
         min_return = min(mu_A, mu_B) * 100 - 1
         max_return = max(mu_A, mu_B) * 100 + 1
@@ -554,13 +573,15 @@ if mu_A == mu_B:
             ),
             xaxis=dict(
                 title="Standard Deviation (%)",
-                tickformat='.1f',
+                tickformat='.2f',
+                dtick=x_tick,
                 gridcolor='rgba(230, 230, 230, 0.8)',
                 range=[0, max_std]
             ),
             yaxis=dict(
                 title="Expected Return (%)",
-                tickformat='.1f',
+                tickformat='.2f',
+                dtick=y_tick,
                 gridcolor='rgba(230, 230, 230, 0.8)',
                 range=[min_return, max_return]
             ),
@@ -578,7 +599,6 @@ if mu_A == mu_B:
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown('<div class="subheader">Portfolio Results</div>', unsafe_allow_html=True)
         
-        # Create a grid for metrics
         col_a, col_b, col_c = st.columns(3)
         
         with col_a:
@@ -602,22 +622,19 @@ if mu_A == mu_B:
         st.markdown('</div>', unsafe_allow_html=True)
 else:
     # Split into efficient and inefficient frontiers
-    efficient_mask = portfolio_returns >= mvp_return  # Keep only points above or equal to MVP's return
+    efficient_mask = portfolio_returns >= mvp_return
     efficient_returns = portfolio_returns[efficient_mask]
     efficient_stds = portfolio_stds[efficient_mask]
     inefficient_returns = portfolio_returns[~efficient_mask]
     inefficient_stds = portfolio_stds[~efficient_mask]
     
-    # Create the plotly figure for normal case
     with col2:
         st.markdown('<div class="card plot-container">', unsafe_allow_html=True)
         
         fig = go.Figure()
         
-        # Define colors for saved frontiers (cycle through these)
         saved_colors = ['#9CA3AF', '#6B7280', '#4B5563', '#374151', '#1F2937']
         
-        # Add saved frontiers first (in background)
         for idx, saved_frontier in enumerate(st.session_state.saved_frontiers):
             saved_data = calculate_frontier_data(
                 saved_frontier['mu_A'],
@@ -628,7 +645,6 @@ else:
             )
             color = saved_colors[idx % len(saved_colors)]
             
-            # Add saved efficient frontier
             fig.add_trace(go.Scatter(
                 x=saved_data['efficient_stds'] * 100,
                 y=saved_data['efficient_returns'] * 100,
@@ -639,7 +655,6 @@ else:
                 hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
             ))
             
-            # Add saved inefficient frontier
             fig.add_trace(go.Scatter(
                 x=saved_data['inefficient_stds'] * 100,
                 y=saved_data['inefficient_returns'] * 100,
@@ -651,7 +666,7 @@ else:
                 hovertemplate=f"{saved_frontier['label']}<br>Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<extra></extra>"
             ))
         
-        # Add current efficient frontier (highlighted)
+        # Add current efficient frontier
         fig.add_trace(go.Scatter(
             x=efficient_stds * 100,
             y=efficient_returns * 100,
@@ -700,11 +715,9 @@ else:
             hovertemplate=f'Risk: %{{x:.2f}}%<br>Return: %{{y:.2f}}%<br>Stock A: {w_star*100:.1f}%<br>Stock B: {(1-w_star)*100:.1f}%<extra></extra>'
         ))
         
-        # Set x-axis limits with default value for empty lists
         max_efficient_std = max(efficient_stds, default=0)
         max_inefficient_std = max(inefficient_stds, default=0)
         
-        # Customize the layout
         fig.update_layout(
             title=dict(
                 text="Efficient Frontier with Minimum-Variance Portfolio (MVP)",
@@ -714,13 +727,15 @@ else:
             ),
             xaxis=dict(
                 title="Standard Deviation (%)",
-                tickformat='.1f',
+                tickformat='.2f',
+                dtick=x_tick,
                 gridcolor='rgba(230, 230, 230, 0.8)',
                 range=[0, max(max_efficient_std, max_inefficient_std) * 100 + 1]
             ),
             yaxis=dict(
                 title="Expected Return (%)",
-                tickformat='.1f',
+                tickformat='.2f',
+                dtick=y_tick,
                 gridcolor='rgba(230, 230, 230, 0.8)',
                 range=[min(min(efficient_returns), min(inefficient_returns, default=mu_A)) * 100 - 1, 
                       max(max(efficient_returns), max(inefficient_returns, default=mu_B)) * 100 + 1]
@@ -739,7 +754,6 @@ else:
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown('<div class="subheader">Portfolio Results</div>', unsafe_allow_html=True)
         
-        # Create a grid for metrics
         col_a, col_b, col_c = st.columns(3)
         
         with col_a:
@@ -796,7 +810,6 @@ with st.expander("📘 Understanding the Efficient Frontier", expanded=False):
     $$x_A = \\frac{\\sigma^2_B - \\rho \\cdot \\sigma_A \\cdot \\sigma_B}{\\sigma^2_A + \\sigma^2_B - 2 \\cdot \\rho \\cdot \\sigma_A \\cdot \\sigma_B}$$
     """)
     
-    # Display additional formulas
     st.markdown("""
     ### Portfolio Standard Deviation
     
