@@ -76,6 +76,19 @@ _DEFAULTS = {
     'y_max_val': None,
     'auto_x_range': True,
     'auto_y_range': True,
+    # Widget keys for the slider <-> number_input synced pairs.
+    # These must be pre-set so we never pass `value=` once a key already
+    # has a value written via the Session State API (the _sync callback).
+    'mu_A_slider': 8.9,
+    'mu_A_number': 8.9,
+    'mu_B_slider': 9.2,
+    'mu_B_number': 9.2,
+    'sigma_A_slider': 7.9,
+    'sigma_A_number': 7.9,
+    'sigma_B_slider': 8.9,
+    'sigma_B_number': 8.9,
+    'rho_slider': -0.5,
+    'rho_number': -0.5,
 }
 for _k, _v in _DEFAULTS.items():
     if _k not in st.session_state:
@@ -191,7 +204,6 @@ with col1:
             'Expected Return of Stock A (%)',
             min_value=0.0, max_value=50.0, step=0.1,
             key='mu_A_slider',
-            value=st.session_state.mu_A_val,
             on_change=_sync, args=('mu_A_slider', 'mu_A_number'),
             help="Annual expected return"
         )
@@ -200,7 +212,6 @@ with col1:
             'Stock A (%)',
             min_value=0.0, max_value=50.0, step=0.1,
             key='mu_A_number',
-            value=st.session_state.mu_A_val,
             on_change=_sync, args=('mu_A_number', 'mu_A_slider'),
             label_visibility='collapsed'
         )
@@ -214,7 +225,6 @@ with col1:
             'Expected Return of Stock B (%)',
             min_value=0.0, max_value=50.0, step=0.1,
             key='mu_B_slider',
-            value=st.session_state.mu_B_val,
             on_change=_sync, args=('mu_B_slider', 'mu_B_number'),
             help="Annual expected return"
         )
@@ -223,7 +233,6 @@ with col1:
             'Stock B (%)',
             min_value=0.0, max_value=50.0, step=0.1,
             key='mu_B_number',
-            value=st.session_state.mu_B_val,
             on_change=_sync, args=('mu_B_number', 'mu_B_slider'),
             label_visibility='collapsed'
         )
@@ -240,7 +249,6 @@ with col1:
             'Standard Deviation of Stock A (%)',
             min_value=0.0, max_value=50.0, step=0.1,
             key='sigma_A_slider',
-            value=st.session_state.sigma_A_val,
             on_change=_sync, args=('sigma_A_slider', 'sigma_A_number'),
             help="Annual standard deviation (volatility)"
         )
@@ -249,7 +257,6 @@ with col1:
             'Std A (%)',
             min_value=0.0, max_value=50.0, step=0.1,
             key='sigma_A_number',
-            value=st.session_state.sigma_A_val,
             on_change=_sync, args=('sigma_A_number', 'sigma_A_slider'),
             label_visibility='collapsed'
         )
@@ -263,7 +270,6 @@ with col1:
             'Standard Deviation of Stock B (%)',
             min_value=0.0, max_value=50.0, step=0.1,
             key='sigma_B_slider',
-            value=st.session_state.sigma_B_val,
             on_change=_sync, args=('sigma_B_slider', 'sigma_B_number'),
             help="Annual standard deviation (volatility)"
         )
@@ -272,7 +278,6 @@ with col1:
             'Std B (%)',
             min_value=0.0, max_value=50.0, step=0.1,
             key='sigma_B_number',
-            value=st.session_state.sigma_B_val,
             on_change=_sync, args=('sigma_B_number', 'sigma_B_slider'),
             label_visibility='collapsed'
         )
@@ -289,7 +294,15 @@ with col1:
         horizontal=True,
         help="Choose whether to input correlation (ρ) or covariance directly"
     )
-    
+
+    # Detect a mode switch so we can push the computed value into the
+    # *other* representation's widgets exactly once (avoids re-passing
+    # value= on every rerun, which conflicts with the Session State API).
+    if 'prev_input_mode' not in st.session_state:
+        st.session_state.prev_input_mode = input_mode
+    mode_just_changed = (input_mode != st.session_state.prev_input_mode)
+    st.session_state.prev_input_mode = input_mode
+
     # Calculate the valid covariance range based on current standard deviations
     sigma_A_decimal_temp = sigma_A / 100
     sigma_B_decimal_temp = sigma_B / 100
@@ -305,13 +318,17 @@ with col1:
         st.session_state.last_cov_pct = st.session_state.last_rho * max_cov * 10000
     
     if input_mode == "Correlation Coefficient":
+        if mode_just_changed:
+            # Coming back from Covariance mode: push the implied rho into
+            # both widgets before they're created (no value= needed/used).
+            st.session_state.rho_slider = st.session_state.last_rho
+            st.session_state.rho_number = st.session_state.last_rho
         sl_rho, ni_rho = st.columns([3, 1])
         with sl_rho:
             st.slider(
                 'Correlation Coefficient (ρ)',
                 min_value=-1.0, max_value=1.0, step=0.01,
                 key='rho_slider',
-                value=st.session_state.last_rho,
                 on_change=_sync, args=('rho_slider', 'rho_number'),
                 help="Correlation between the two assets (-1 to 1)"
             )
@@ -320,7 +337,6 @@ with col1:
                 'ρ',
                 min_value=-1.0, max_value=1.0, step=0.01,
                 key='rho_number',
-                value=st.session_state.last_rho,
                 on_change=_sync, args=('rho_number', 'rho_slider'),
                 label_visibility='collapsed'
             )
@@ -333,7 +349,23 @@ with col1:
     else:  # Covariance mode
         default_cov_pct = st.session_state.last_rho * max_cov * 10000
         default_cov_pct = max(min_cov_pct, min(max_cov_pct, default_cov_pct))
-        
+
+        if mode_just_changed:
+            # Coming back from Correlation mode: push the implied covariance
+            # into both widgets before they're created.
+            st.session_state.cov_slider = float(default_cov_pct)
+            st.session_state.cov_number = float(default_cov_pct)
+        else:
+            # Sigma_A/Sigma_B may have moved since the last run, which shifts
+            # the valid covariance range — re-clamp the stored value so it
+            # never falls outside the slider's current min/max.
+            st.session_state.cov_slider = float(max(
+                min_cov_pct, min(max_cov_pct, st.session_state.get('cov_slider', default_cov_pct))
+            ))
+            st.session_state.cov_number = float(max(
+                min_cov_pct, min(max_cov_pct, st.session_state.get('cov_number', default_cov_pct))
+            ))
+
         sl_cov, ni_cov = st.columns([3, 1])
         with sl_cov:
             st.slider(
@@ -342,7 +374,6 @@ with col1:
                 max_value=float(max_cov_pct),
                 step=0.01,
                 key='cov_slider',
-                value=float(default_cov_pct),
                 on_change=_sync, args=('cov_slider', 'cov_number'),
                 help=f"Covariance between the two assets. Valid range: [{min_cov_pct:.2f}, {max_cov_pct:.2f}] %²"
             )
@@ -353,7 +384,6 @@ with col1:
                 max_value=float(max_cov_pct),
                 step=0.01,
                 key='cov_number',
-                value=float(default_cov_pct),
                 on_change=_sync, args=('cov_number', 'cov_slider'),
                 label_visibility='collapsed'
             )
